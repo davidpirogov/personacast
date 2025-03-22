@@ -6,7 +6,7 @@
     "features": {
         "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
         "ghcr.io/devcontainers/features/node:1": {},
-        "ghcr.io/trunk-io/devcontainer-feature/trunk:1": {},
+        "ghcr.io/trunk-io/devcontainer-feature/trunk:1": {}
     },
     "forwardPorts": [3000]
 }
