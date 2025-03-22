@@ -15,6 +15,7 @@ temp/
 # Next.js
 .next/
 out/
+cache/
 build/
 .next.config.js.swp
 
