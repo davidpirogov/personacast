@@ -8,10 +8,10 @@ RUN corepack enable pnpm && pnpm -v
 
 COPY package*.json ./
 COPY pnpm-lock.yaml ./
-RUN pnpm install
+RUN BUILD_SKIP_DB_SERVER=1 pnpm install
 
 COPY . ./
-RUN pnpm build
+RUN BUILD_SKIP_DB_SERVER=1 pnpm build
 
 FROM node:${NODE_VERSION}-${DEBIAN_VERSION}
 
