@@ -11,6 +11,7 @@ services:
         user: "${USER_ID:-1000}:${GROUP_ID:-1000}"
         depends_on:
             - personacast-db
+            - personacast-redis
         volumes:
             - personacast-podcast-data:/app/data
         networks:
@@ -30,9 +31,29 @@ services:
         networks:
             - personacast-network
 
+    personacast-redis:
+        container_name: personacast-redis
+        image: bitnami/redis:${REDIS_VERSION:-7.2}
+        restart: unless-stopped
+        environment:
+            REDIS_PASSWORD: ${REDIS_PASSWORD}
+            REDIS_IO_THREADS: ${REDIS_IO_THREADS:-4}
+            REDIS_DISABLE_COMMANDS: ${REDIS_DISABLE_COMMANDS:-FLUSHDB,FLUSHALL}
+        volumes:
+            - personacast-redis-data:/bitnami/redis/data
+        networks:
+            - personacast-network
+        healthcheck:
+            test: [CMD, redis-cli, ping]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 30s
+
 volumes:
     personacast-db-data:
     personacast-podcast-data:
+    personacast-redis-data:
 
 networks:
     personacast-network:
