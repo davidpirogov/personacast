@@ -70,6 +70,7 @@ export interface DatabaseAdapter<T extends BaseRecord> {
     delete(id: string, tx?: Prisma.TransactionClient): Promise<void>;
 }
 
+// Database adapter where the id is a string (UUID)
 export interface UuidDatabaseAdapter<T extends BaseRecord> extends DatabaseAdapter<T> {
     getById(id: string, tx?: Prisma.TransactionClient): Promise<T | null>;
     update(
@@ -80,6 +81,7 @@ export interface UuidDatabaseAdapter<T extends BaseRecord> extends DatabaseAdapt
     delete(id: string, tx?: Prisma.TransactionClient): Promise<void>;
 }
 
+// Database adapter where the id is a number (integer)
 export interface IdDatabaseAdapter<T extends BaseRecord> extends DatabaseAdapter<T> {
     getById(id: number, tx?: Prisma.TransactionClient): Promise<T | null>;
     update(
@@ -91,9 +93,8 @@ export interface IdDatabaseAdapter<T extends BaseRecord> extends DatabaseAdapter
 }
 
 // Concrete adapter types
-// Rename these types so that the literal name can be used as implementation name
-export type UsersAdapter = UuidDatabaseAdapter<User>;
-export type AccountsAdapter = UuidDatabaseAdapter<Account>;
-export type PodcastsAdapter = IdDatabaseAdapter<Podcast>;
-export type EpisodesAdapter = IdDatabaseAdapter<Episode>;
-export type ApiClientsAdapter = IdDatabaseAdapter<ApiClient>;
+export type UsersAdapterType = UuidDatabaseAdapter<User>;
+export type AccountsAdapterType = UuidDatabaseAdapter<Account>;
+export type PodcastsAdapterType = IdDatabaseAdapter<Podcast>;
+export type EpisodesAdapterType = IdDatabaseAdapter<Episode>;
+export type ApiClientsAdapterType = IdDatabaseAdapter<ApiClient>;

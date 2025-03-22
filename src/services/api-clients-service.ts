@@ -13,7 +13,7 @@ export class ApiClientsService {
         return this.adapter.getAll();
     }
 
-    async getClientById(id: string): Promise<ApiClient | null> {
+    async getClientById(id: number): Promise<ApiClient | null> {
         return this.adapter.getById(id);
     }
 
@@ -28,13 +28,13 @@ export class ApiClientsService {
     }
 
     async updateClient(
-        id: string,
+        id: number,
         data: Partial<Omit<ApiClient, "id" | "created_at" | "updated_at">>,
     ): Promise<ApiClient> {
         return this.adapter.update(id, data);
     }
 
-    async deleteClient(id: string): Promise<void> {
+    async deleteClient(id: number): Promise<void> {
         return this.adapter.delete(id);
     }
 

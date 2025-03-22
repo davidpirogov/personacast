@@ -1,9 +1,9 @@
 import { PrismaClient, Prisma } from "@prisma/client";
-import { Account, UuidDatabaseAdapter } from "@/types/database";
+import { Account, AccountsAdapterType } from "@/types/database";
 
 const prisma = new PrismaClient();
 
-export class AccountsAdapterImpl implements UuidDatabaseAdapter<Account> {
+export class AccountsAdapter implements AccountsAdapterType {
     async getAll(tx?: Prisma.TransactionClient): Promise<Account[]> {
         const client = tx || prisma;
         const accounts = await client.account.findMany();

@@ -1,8 +1,8 @@
-import { IdDatabaseAdapter, Podcast } from "@/types/database";
+import { Podcast, PodcastsAdapterType } from "@/types/database";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/database/prisma";
 
-class PodcastsAdapter implements IdDatabaseAdapter<Podcast> {
+class PodcastsAdapter implements PodcastsAdapterType {
     async getAll(tx?: Prisma.TransactionClient): Promise<Podcast[]> {
         const client = tx || prisma;
         return await client.podcast.findMany();

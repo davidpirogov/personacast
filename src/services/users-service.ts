@@ -1,39 +1,43 @@
-import { User } from '@/types/database';
-import { UsersAdapterImpl } from '@/lib/database/adapters/users';
-
-const usersAdapter = new UsersAdapterImpl();
+import { User } from "@/types/database";
+import { UsersAdapter } from "@/lib/database/adapters/users";
 
 export class UsersService {
+    private adapter: UsersAdapter;
+
+    constructor() {
+        this.adapter = new UsersAdapter();
+    }
+
     async getAllUsers(): Promise<User[]> {
-        return usersAdapter.getAll();
+        return this.adapter.getAll();
     }
 
     async getUserById(id: string): Promise<User | null> {
-        return usersAdapter.getById(id);
+        return this.adapter.getById(id);
     }
 
     async createUser(data: Omit<User, "id" | "createdAt" | "updatedAt">): Promise<User> {
-        return usersAdapter.create(data);
+        return this.adapter.create(data);
     }
 
     async updateUser(id: string, data: Partial<Omit<User, "id" | "createdAt" | "updatedAt">>): Promise<User> {
-        return usersAdapter.update(id, data);
+        return this.adapter.update(id, data);
     }
 
     async deleteUser(id: string): Promise<void> {
-        return usersAdapter.delete(id);
+        return this.adapter.delete(id);
     }
 
     // Additional user-specific methods
     async findByEmail(email: string): Promise<User | null> {
-        const users = await usersAdapter.getAll();
-        return users.find(user => user.email === email) || null;
+        const users = await this.adapter.getAll();
+        return users.find((user) => user.email === email) || null;
     }
 
     async toggleUserActive(id: string): Promise<User> {
         const user = await this.getUserById(id);
         if (!user) {
-            throw new Error('User not found');
+            throw new Error("User not found");
         }
         return this.updateUser(id, { isActive: !user.isActive });
     }
@@ -41,4 +45,4 @@ export class UsersService {
     async updateRole(id: string, role: "podcaster:editor" | "podcaster:admin"): Promise<User> {
         return this.updateUser(id, { role });
     }
-} 
+}

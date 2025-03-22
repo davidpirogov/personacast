@@ -1,8 +1,8 @@
-import { IdDatabaseAdapter, ApiClient } from "@/types/database";
+import { ApiClientsAdapterType, ApiClient } from "@/types/database";
 import { prisma } from "@/lib/database/prisma";
 import { Prisma } from "@prisma/client";
 
-class ApiClientsAdapter implements IdDatabaseAdapter<ApiClient> {
+class ApiClientsAdapter implements ApiClientsAdapterType {
     async getAll(tx?: Prisma.TransactionClient): Promise<ApiClient[]> {
         const client = tx || prisma;
         const result = await client.apiClient.findMany();

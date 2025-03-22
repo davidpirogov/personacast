@@ -1,10 +1,10 @@
 import type { Adapter, AdapterUser, AdapterAccount } from "@auth/core/adapters";
-import { UsersAdapterImpl } from "@/lib/database/adapters/users";
-import { AccountsAdapterImpl } from "@/lib/database/adapters/accounts";
+import { UsersAdapter } from "@/lib/database/adapters/users";
+import { AccountsAdapter } from "@/lib/database/adapters/accounts";
 
 export function AuthenticationAdapter(): Adapter {
-    const usersAdapter = new UsersAdapterImpl();
-    const accountsAdapter = new AccountsAdapterImpl();
+    const usersAdapter = new UsersAdapter();
+    const accountsAdapter = new AccountsAdapter();
 
     return {
         async createUser(data) {
