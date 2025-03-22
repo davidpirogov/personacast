@@ -35,12 +35,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN if getent group ${GROUP_ID} ; then \
         echo "Group ${GROUP_ID} already exists" ; \
     else \
-        groupadd -g ${GROUP_ID} avprocessor ; \
+        groupadd -g ${GROUP_ID} personacast ; \
     fi && \
     if getent passwd ${USER_ID} ; then \
         echo "User ${USER_ID} already exists" ; \
     else \
-        useradd -u ${USER_ID} -g ${GROUP_ID} -m -s /bin/bash avprocessor ; \
+        useradd -u ${USER_ID} -g ${GROUP_ID} -m -s /bin/bash -l personacast ; \
     fi
 
 RUN mkdir -p /app/data && \
@@ -53,7 +53,7 @@ USER ${USER_ID}
 EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:3000/health || exit 1
+    CMD curl -f http://localhost:3000/api/health || exit 1
 
 VOLUME [ "/app/data" ]
 

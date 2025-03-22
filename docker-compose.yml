@@ -15,12 +15,6 @@ services:
             - personacast-podcast-data:/app/data
         networks:
             - personacast-network
-        healthcheck:
-            test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
-            interval: 30s
-            timeout: 10s
-            retries: 3
-            start_period: 40s
 
     personacast-db:
         container_name: personacast-db
