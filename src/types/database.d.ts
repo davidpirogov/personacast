@@ -2,8 +2,8 @@
 export interface BaseRecord {
     id: number;
     name: string;
-    created_at: Date;
-    updated_at: Date;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 // Podcast specific fields
@@ -11,11 +11,18 @@ export interface Podcast extends BaseRecord {
     title: string;
     description: string;
     published: boolean;
-    published_at: Date | null;
+    publishedAt: Date | null;
 }
 
 // Episode specific fields
 export interface Episode extends BaseRecord {}
+
+// API Client specific fields
+export interface ApiClient extends BaseRecord {
+    description: string;
+    token: string;
+    isActive: boolean;
+}
 
 // Generic database adapter interface
 export interface DatabaseAdapter<T extends BaseRecord> {
@@ -29,3 +36,4 @@ export interface DatabaseAdapter<T extends BaseRecord> {
 // Concrete adapter types
 export type PodcastsAdapter = DatabaseAdapter<Podcast>;
 export type EpisodesAdapter = DatabaseAdapter<Episode>;
+export type ApiClientsAdapter = DatabaseAdapter<ApiClient>;

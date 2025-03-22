@@ -22,13 +22,42 @@ export default async function middleware(req: NextRequest) {
 
     // Handle API routes
     if (pathname.startsWith("/api/")) {
+        const bearerToken = req.headers.get("Authorization")?.split(" ")[1];
+
+        // If there's a bearer token, validate it as an API client
+        if (bearerToken) {
+            try {
+                const validateResponse = await fetch(new URL("/api/auth/validate-token", req.url), {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ token: bearerToken }),
+                });
+
+                const { valid } = await validateResponse.json();
+
+                if (!valid) {
+                    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+                }
+
+                // If token is valid, allow the request without checking session
+                return NextResponse.next();
+            } catch (error) {
+                console.error("Error validating token:", error);
+                return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+            }
+        }
+
+        // If no bearer token, check for session-based auth
         if (!session) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
+
         return NextResponse.next();
     }
 
-    // Check if user is authenticated with correct role
+    // For non-API routes, require session authentication
     const isAuthenticated = isRoleAnAuthenticatedRole(session?.user?.role);
 
     // Redirect to home if not authenticated with correct role
