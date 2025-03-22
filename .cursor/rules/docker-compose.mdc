@@ -1,0 +1,133 @@
+---
+description: Docker compose files
+globs: *docker-compose*.yml
+alwaysApply: false
+---
+# Docker Compose Rules
+
+## Modern Docker Compose Format
+
+- **Do not include a `version` field** in new Docker Compose files. The `version` key is deprecated in Compose specification and should be omitted in new files.
+- Use the modern Compose specification format which is compatible with Docker Compose V2.
+
+## Services Configuration
+
+- Always specify container names using the `container_name` property to avoid auto-generated names.
+- Use the `restart` policy (e.g., `restart: unless-stopped` or `restart: always`) for production services.
+- Prefer named volumes over bind mounts when possible for better portability.
+- If using bind mounts, create an environment variable for the bind mount directory.
+- Use environment variables with `.env` files for configuration:
+  ```yaml
+  services:
+    app:
+      env_file:
+        - .env
+  ```
+
+## Networking
+
+- Create named networks explicitly for multi-service applications:
+  ```yaml
+  networks:
+    app-network:
+      driver: bridge
+  ```
+- Connect services to networks using the `networks` property:
+  ```yaml
+  services:
+    app:
+      networks:
+        - app-network
+  ```
+
+## Volumes
+
+- Define named volumes in the top-level `volumes` section:
+  ```yaml
+  volumes:
+    data-volume:
+      driver: local
+  ```
+- Reference named volumes in services:
+  ```yaml
+  services:
+    db:
+      volumes:
+        - data-volume:/var/lib/postgresql/data
+  ```
+
+## Resource Limits
+
+- Set resource constraints for services in production:
+  ```yaml
+  services:
+    app:
+      deploy:
+        resources:
+          limits:
+            cpus: '0.5'
+            memory: 512M
+  ```
+
+## Health Checks
+
+- Include health checks for critical services:
+  ```yaml
+  services:
+    app:
+      healthcheck:
+        test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+        interval: 30s
+        timeout: 10s
+        retries: 3
+        start_period: 40s
+  ```
+
+## Dependency Management
+
+- Use `depends_on` to establish service dependencies:
+  ```yaml
+  services:
+    app:
+      depends_on:
+        db:
+          condition: service_healthy
+  ```
+
+## Security Best Practices
+
+- Never hardcode sensitive information (passwords, API keys) directly in the compose file.
+- Always check to make sure the `secrets` folder is hidden with `.gitignore` in any folder in the repository
+- Use secrets management for sensitive data:
+  ```yaml
+  services:
+    app:
+      secrets:
+        - db_password
+  secrets:
+    db_password:
+      file: ./secrets/db_password.txt
+  ```
+- Avoid running containers as root; specify a non-root user using an environment variable with a default:
+  ```yaml
+  services:
+    app:
+      user: "1000:1000"
+  ```
+
+## File Organization
+
+- For complex applications, consider splitting into multiple compose files:
+  - `docker-compose.yml` (base configuration)
+  - `docker-compose.prod.yml` (production overrides with secrets)
+- Create a prod override sample file, such as `docker-compose.prod.yml.sample` 
+- Add `docker-compose.prod.yml` to the `.gitignore` file so that it can be overriden in production
+
+## Common Mistakes to Avoid
+
+- Don't use the `build` instruction in production compose files; use pre-built images instead.
+- Avoid exposing unnecessary ports to the host.
+- If exposing ports, use environment variables such as `HOST_BIND_IP_ADDRESS` (default: `127.0.0.1`) and `HOST_BIND_PORT` (default: `-1`). The reason to use `-1` as a default is to cause an error if the environment values are not loaded or set up correctly.
+- Don't use `latest` tag for production images; specify exact versions.
+- Avoid mounting the entire project directory in production.
+
