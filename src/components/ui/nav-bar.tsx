@@ -25,24 +25,28 @@ const navItems: NavItem[] = [
         className: "text-foreground transition-colors",
         children: "Home",
     },
+    {
+        href: "/podcasts",
+        className: "text-foreground transition-colors",
+        children: "Podcasts",
+    },
+    {
+        href: "/studio",
+        className: "text-foreground transition-colors",
+        children: "Studio",
+    },
+    {
+        href: "/admin",
+        className: "text-foreground transition-colors",
+        children: "Admin",
+    },
 ];
 
 const adminNavItems: NavItem[] = [
     {
-        href: "/admin",
+        href: "/admin/api-clients",
         className: "text-foreground transition-colors",
-        children: "Dashboard",
-        exact: true,
-    },
-    {
-        href: "/admin/auth",
-        className: "text-foreground transition-colors",
-        children: "Authentication",
-    },
-    {
-        href: "/admin/roles",
-        className: "text-foreground transition-colors",
-        children: "User Roles",
+        children: "API Clients",
     },
     {
         href: "/admin/users",
@@ -55,7 +59,7 @@ function Avatar({ src, alt }: { src?: string | null; alt: string }) {
     return (
         <div className="relative w-8 h-8 rounded-full overflow-hidden bg-gray-200">
             {src ? (
-                <Image src={src} alt={alt} fill className="object-cover" />
+                <Image src={src} alt={alt} fill sizes="32px" className="object-cover" />
             ) : (
                 <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-600">
                     {alt.charAt(0).toUpperCase()}
