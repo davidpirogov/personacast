@@ -1,0 +1,12 @@
+{
+    "name": "PersonaCast (devcontainer)",
+    "dockerComposeFile": ["../docker-compose.yml", "docker-compose.dev.yml"],
+    "service": "personacast",
+    "workspaceFolder": "/workspace",
+    "features": {
+        "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
+        "ghcr.io/devcontainers/features/node:1": {},
+        "ghcr.io/trunk-io/devcontainer-feature/trunk:1": {},
+    },
+    "forwardPorts": [3000]
+}

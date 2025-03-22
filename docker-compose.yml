@@ -1,0 +1,45 @@
+services:
+    personacast:
+        container_name: personacast
+        build:
+            context: .
+            dockerfile: containers/personacast/Dockerfile
+            args:
+                USER_ID: ${USER_ID:-1000}
+                GROUP_ID: ${GROUP_ID:-1000}
+        restart: unless-stopped
+        user: "${USER_ID:-1000}:${GROUP_ID:-1000}"
+        depends_on:
+            - personacast-db
+        volumes:
+            - personacast-podcast-data:/app/data
+        networks:
+            - personacast-network
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 40s
+
+    personacast-db:
+        container_name: personacast-db
+        image: bitnami/postgresql:${POSTGRES_VERSION:-16}
+        restart: unless-stopped
+        environment:
+            POSTGRES_ROOT_PASSWORD: ${POSTGRES_ROOT_PASSWORD}
+            POSTGRES_USERNAME: ${POSTGRES_USER}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+            POSTGRES_DATABASE: ${POSTGRES_DB}
+        volumes:
+            - personacast-db-data:/bitnami/postgresql
+        networks:
+            - personacast-network
+
+volumes:
+    personacast-db-data:
+    personacast-podcast-data:
+
+networks:
+    personacast-network:
+        driver: bridge
