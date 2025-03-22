@@ -12,6 +12,12 @@
 
 temp/
 
+# Next.js
+.next/
+out/
+build/
+.next.config.js.swp
+
 # Docker Compose override files
 docker-compose.override.yml
 
