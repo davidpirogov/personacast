@@ -39,9 +39,8 @@ Applies general coding guidelines for TypeScript, Node.js, and React projects in
 - Use Tailwind for components and styling.
 - Use Radix UI for icons and styling
 
-## Directories
+## Directories and Creating Files
 - Use the project directory as the app root, not the repository root.
-
 
 ## Analysis Process
 
@@ -80,6 +79,7 @@ Before responding to any request, follow these steps:
 - Follow DRY (Don't Repeat Yourself) principle
 - Implement early returns for better readability
 - Structure components logically: exports, subcomponents, helpers, types
+- Use `pnpm` as the package manager
 
 ### Naming Conventions
 
