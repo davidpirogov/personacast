@@ -1,37 +1,54 @@
-import { DatabaseAdapter, Podcast } from "@/types/database";
-import { query } from "../utils";
+import { IdDatabaseAdapter, Podcast } from "@/types/database";
+import { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/database/prisma";
 
-class PodcastsAdapter implements DatabaseAdapter<Podcast> {
-    async getAll(): Promise<Podcast[]> {
-        const result = await query<Podcast>("SELECT * FROM podcasts");
-        return result;
+class PodcastsAdapter implements IdDatabaseAdapter<Podcast> {
+    async getAll(tx?: Prisma.TransactionClient): Promise<Podcast[]> {
+        const client = tx || prisma;
+        return await client.podcast.findMany();
     }
 
-    async getById(id: string): Promise<Podcast | null> {
-        const result = await query<Podcast>("SELECT * FROM podcasts WHERE id = $1", [id]);
-        return result[0] || null;
+    async getById(id: number, tx?: Prisma.TransactionClient): Promise<Podcast | null> {
+        const client = tx || prisma;
+        return await client.podcast.findUnique({
+            where: { id },
+        });
     }
 
-    async create(data: Omit<Podcast, "id" | "created_at" | "updated_at">): Promise<Podcast> {
-        const result = await query<Podcast>("INSERT INTO podcasts (name) VALUES ($1) RETURNING *", [
-            data.name,
-        ]);
-        return result[0];
+    async create(
+        data: Omit<Podcast, "id" | "created_at" | "updated_at">,
+        tx?: Prisma.TransactionClient,
+    ): Promise<Podcast> {
+        const client = tx || prisma;
+        return await client.podcast.create({
+            data: {
+                ...data,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+        });
     }
 
     async update(
-        id: string,
+        id: number,
         data: Partial<Omit<Podcast, "id" | "created_at" | "updated_at">>,
+        tx?: Prisma.TransactionClient,
     ): Promise<Podcast> {
-        const result = await query<Podcast>("UPDATE podcasts SET name = $1 WHERE id = $2 RETURNING *", [
-            data.name,
-            id,
-        ]);
-        return result[0];
+        const client = tx || prisma;
+        return await client.podcast.update({
+            where: { id },
+            data: {
+                ...data,
+                updatedAt: new Date(),
+            },
+        });
     }
 
-    async delete(id: string): Promise<void> {
-        await query("DELETE FROM podcasts WHERE id = $1", [id]);
+    async delete(id: number, tx?: Prisma.TransactionClient): Promise<void> {
+        const client = tx || prisma;
+        await client.podcast.delete({
+            where: { id },
+        });
     }
 }
 

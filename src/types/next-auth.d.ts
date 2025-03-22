@@ -16,6 +16,13 @@ declare module "next-auth" {
             image?: string | null;
         };
     }
+
+    interface Session extends DefaultSession {
+        user: {
+            id: string;
+            role: Role;
+        } & DefaultSession["user"];
+    }
 }
 
 declare module "next-auth/jwt" {

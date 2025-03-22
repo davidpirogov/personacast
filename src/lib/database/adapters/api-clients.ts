@@ -1,21 +1,28 @@
-import { DatabaseAdapter, ApiClient } from "@/types/database";
+import { IdDatabaseAdapter, ApiClient } from "@/types/database";
 import { prisma } from "@/lib/database/prisma";
+import { Prisma } from "@prisma/client";
 
-class ApiClientsAdapter implements DatabaseAdapter<ApiClient> {
-    async getAll(): Promise<ApiClient[]> {
-        const result = await prisma.apiClient.findMany();
+class ApiClientsAdapter implements IdDatabaseAdapter<ApiClient> {
+    async getAll(tx?: Prisma.TransactionClient): Promise<ApiClient[]> {
+        const client = tx || prisma;
+        const result = await client.apiClient.findMany();
         console.log("API CLIENTS =", result);
         return result;
     }
 
-    async getById(id: string): Promise<ApiClient | null> {
-        return await prisma.apiClient.findUnique({
-            where: { id: parseInt(id) },
+    async getById(id: number, tx?: Prisma.TransactionClient): Promise<ApiClient | null> {
+        const client = tx || prisma;
+        return await client.apiClient.findUnique({
+            where: { id: id },
         });
     }
 
-    async create(data: Omit<ApiClient, "id" | "created_at" | "updated_at">): Promise<ApiClient> {
-        return await prisma.apiClient.create({
+    async create(
+        data: Omit<ApiClient, "id" | "created_at" | "updated_at">,
+        tx?: Prisma.TransactionClient,
+    ): Promise<ApiClient> {
+        const client = tx || prisma;
+        return await client.apiClient.create({
             data: {
                 name: data.name,
                 description: data.description,
@@ -28,23 +35,27 @@ class ApiClientsAdapter implements DatabaseAdapter<ApiClient> {
     }
 
     async update(
-        id: string,
+        id: number,
         data: Partial<Omit<ApiClient, "id" | "created_at" | "updated_at">>,
+        tx?: Prisma.TransactionClient,
     ): Promise<ApiClient> {
-        return await prisma.apiClient.update({
-            where: { id: parseInt(id) },
+        const client = tx || prisma;
+        return await client.apiClient.update({
+            where: { id },
             data: {
                 name: data.name,
                 description: data.description,
                 token: data.token,
                 isActive: data.isActive,
+                updatedAt: new Date(),
             },
         });
     }
 
-    async delete(id: string): Promise<void> {
-        await prisma.apiClient.delete({
-            where: { id: parseInt(id) },
+    async delete(id: number, tx?: Prisma.TransactionClient): Promise<void> {
+        const client = tx || prisma;
+        await client.apiClient.delete({
+            where: { id },
         });
     }
 }
