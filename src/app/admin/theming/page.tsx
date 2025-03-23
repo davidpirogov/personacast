@@ -6,24 +6,22 @@ import GeneralPageSection from "@/components/sections/general-page-section";
 import { usersService } from "@/services/users-service";
 
 export const metadata: Metadata = {
-    title: "Users | Admin",
+    title: "Landing | Admin",
 };
 
-const UsersList = async () => {
-    const users = await usersService.getAllUsers();
-
+const LandingPageAdminSection = async () => {
     return (
-        <GeneralPageSection title="Users" description="Manage your users">
-            <UsersTable users={users} />
+        <GeneralPageSection title="Landing Page Settings" description="Manage your landing page settings">
+            TODO
         </GeneralPageSection>
     );
 };
 
-export default function UsersPage() {
+export default function LandingPageAdminPage() {
     return (
         <main data-theme="workzone" className="container mx-auto mt-16 p-6">
             <Suspense fallback={<Loader />}>
-                <UsersList />
+                <LandingPageAdminSection />
             </Suspense>
         </main>
     );

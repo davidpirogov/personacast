@@ -11,12 +11,15 @@ import { signIn, signOut } from "next-auth/react";
 import { usePermissions } from "@/lib/hooks/usePermissions";
 import { useSessionState } from "@/lib/hooks/use-session-state";
 import Image from "next/image";
+import { Role } from "next-auth";
+import { navBarClasses } from "./classes";
 
 type NavItem = {
     href: string;
     className: string;
     children: string;
     exact?: boolean;
+    roles?: Role[];
 };
 
 const navItems: NavItem[] = [
@@ -24,21 +27,25 @@ const navItems: NavItem[] = [
         href: "/",
         className: "text-foreground transition-colors",
         children: "Home",
+        roles: [],
     },
     {
         href: "/podcasts",
         className: "text-foreground transition-colors",
         children: "Podcasts",
+        roles: [],
     },
     {
         href: "/studio",
         className: "text-foreground transition-colors",
         children: "Studio",
+        roles: ["podcaster:editor", "podcaster:admin"],
     },
     {
         href: "/admin",
         className: "text-foreground transition-colors",
         children: "Admin",
+        roles: ["podcaster:admin"],
     },
 ];
 
@@ -52,6 +59,11 @@ const adminNavItems: NavItem[] = [
         href: "/admin/users",
         className: "text-foreground transition-colors",
         children: "Users",
+    },
+    {
+        href: "/admin/theming",
+        className: "text-foreground transition-colors",
+        children: "Theming",
     },
 ];
 
@@ -72,6 +84,7 @@ function Avatar({ src, alt }: { src?: string | null; alt: string }) {
 export function NavBar() {
     const pathname = usePathname();
     const isAdminSection = pathname?.startsWith("/admin");
+    const isStudioSection = pathname?.startsWith("/studio");
     const { session, isLoading } = useSessionState();
     const { canAccessAdmin } = usePermissions();
 
@@ -88,12 +101,12 @@ export function NavBar() {
     // Show loading state
     if (isLoading) {
         return (
-            <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <nav className="fixed top-0 z-50 w-full bg-background/5 backdrop-blur-lg border-b border-white/10">
                 <div className="container mx-auto px-4">
                     <div className="flex h-14 items-center justify-between">
                         <div className="flex items-center">
                             <Link href="/" className="mr-6 flex items-center space-x-2">
-                                <span className="font-bold">Personacast</span>
+                                <span className="font-bold text-foreground">Personacast</span>
                             </Link>
                         </div>
                     </div>
@@ -102,28 +115,52 @@ export function NavBar() {
         );
     }
 
+    const renderableMenuItems = navItems
+        .map((item) => {
+            // If the item has no roles, it is visible to all users
+            if (item.roles && item.roles.length === 0) {
+                return item;
+            }
+            // If the user is not authenticated, the item is not visible
+            if (!session) {
+                return null;
+            }
+
+            // If the item has roles, it is only visible to users with the required roles
+            if (item.roles && item.roles.length > 0 && item.roles.includes(session?.user.role)) {
+                return item;
+            }
+
+            return null;
+        })
+        .filter((item) => item !== null);
+
+    const useLandingTheme = !isAdminSection && !isStudioSection;
+    const navBarClassName = navBarClasses(useLandingTheme);
+
+    console.log("navBarClassName", navBarClassName);
+
     return (
-        <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <nav data-theme={useLandingTheme ? "landing" : "workzone"} className={navBarClassName}>
             <div className="container mx-auto px-4">
                 {/* Desktop Navigation */}
                 <div className="hidden md:block">
                     <div className="flex h-14 items-center justify-between">
                         <div className="flex items-center">
                             <Link href="/" className="mr-6 flex items-center space-x-2">
-                                <span className="font-bold">Personacast</span>
+                                <span className="font-bold text-foreground">Personacast</span>
                             </Link>
                             <NavigationMenu>
                                 <NavigationMenuList className="gap-6">
-                                    {navItems.map((props) => (
+                                    {renderableMenuItems.map((props) => (
                                         <NavigationMenuItem key={props.href}>
                                             <Link
                                                 {...props}
                                                 className={cn(
-                                                    props.className,
-                                                    "px-3 py-2 rounded-md",
+                                                    "landing:text-foreground/80 workzone:text-foreground/80 transition-colors px-3 py-2 rounded-md",
                                                     isActive(props.href)
-                                                        ? "bg-accent text-accent-foreground"
-                                                        : "hover:bg-accent/50",
+                                                        ? "landing:bg-accent landing:text-accent-foreground workzone:bg-primary workzone:text-primary-foreground"
+                                                        : "landing:hover:bg-accent/10 landing:hover:text-accent-foreground workzone:hover:bg-primary/10 workzone:hover:text-primary-foreground",
                                                 )}
                                             />
                                         </NavigationMenuItem>
@@ -133,10 +170,10 @@ export function NavBar() {
                                             <Link
                                                 href="/admin"
                                                 className={cn(
-                                                    "text-foreground transition-colors px-3 py-2 rounded-md",
+                                                    "text-foreground/80 transition-colors px-3 py-2 rounded-md",
                                                     isActive("/admin")
-                                                        ? "bg-accent text-accent-foreground"
-                                                        : "hover:bg-accent/50",
+                                                        ? "bg-accent/10 text-accent-foreground"
+                                                        : "hover:bg-accent/20 hover:text-accent-foreground",
                                                 )}
                                             >
                                                 Admin
@@ -152,15 +189,17 @@ export function NavBar() {
                                     <div className="flex items-center gap-2">
                                         <Avatar src={session.user.image} alt={session.user.name || ""} />
                                         <div className="flex flex-col">
-                                            <div className="text-gray-700">
+                                            <div className="text-foreground/80">
                                                 <div className="text-sm font-bold">{session.user.name}</div>
-                                                <div className="text-xs mt-[-2px]">{session.user.role}</div>
+                                                <div className="text-xs mt-[-2px] text-foreground/60">
+                                                    {session.user.role}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                     <button
                                         onClick={() => signOut()}
-                                        className="px-3 py-1.5 bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors"
+                                        className="px-3 py-1.5 bg-accent/10 border border-accent/20 rounded-md text-accent-foreground hover:bg-accent/20 font-medium transition-colors"
                                     >
                                         Sign out
                                     </button>
@@ -168,7 +207,7 @@ export function NavBar() {
                             ) : (
                                 <button
                                     onClick={() => signIn()}
-                                    className="px-3 py-1.5 bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors"
+                                    className="px-3 py-1.5 bg-accent/10 border border-accent/20 rounded-md text-accent-foreground hover:bg-accent/20 font-medium transition-colors"
                                 >
                                     Sign in
                                 </button>
@@ -178,7 +217,7 @@ export function NavBar() {
 
                     {/* Admin Submenu - Desktop */}
                     {isAdminSection && (
-                        <div className="border-t">
+                        <div className="border-t border-border/10">
                             <NavigationMenu>
                                 <NavigationMenuList className="gap-6 h-12">
                                     {adminNavItems.map((props) => (
@@ -186,11 +225,10 @@ export function NavBar() {
                                             <Link
                                                 href={props.href}
                                                 className={cn(
-                                                    props.className,
-                                                    "px-3 py-2 rounded-md",
+                                                    "landing:text-foreground/80 workzone:text-foreground/80 transition-colors px-3 py-2 rounded-md",
                                                     isActive(props.href, props.exact)
-                                                        ? "bg-accent text-accent-foreground"
-                                                        : "hover:bg-accent/50",
+                                                        ? "landing:bg-accent/10 landing:text-accent-foreground workzone:bg-accent/10 workzone:text-accent-foreground"
+                                                        : "landing:hover:bg-accent/20 landing:hover:text-accent-foreground workzone:hover:bg-accent/20 workzone:hover:text-accent-foreground",
                                                 )}
                                             >
                                                 {props.children}
@@ -248,11 +286,11 @@ export function NavBar() {
                                                 <Link
                                                     href="/admin"
                                                     className={cn(
-                                                        "text-foreground transition-colors",
+                                                        "text-foreground/80 transition-colors",
                                                         "w-full h-full py-4 px-4 block",
                                                         isActive("/admin")
-                                                            ? "bg-accent text-accent-foreground"
-                                                            : "hover:bg-accent/50",
+                                                            ? "bg-accent/10 text-accent-foreground"
+                                                            : "hover:bg-accent/20 hover:text-accent-foreground",
                                                     )}
                                                 >
                                                     Admin
@@ -263,7 +301,7 @@ export function NavBar() {
                                         {/* Admin Submenu Items - Mobile */}
                                         {isAdminSection && session && canAccessAdmin && (
                                             <>
-                                                <div className="py-[1px] px-4 text-sm font-medium text-gray-500 border-t"></div>
+                                                <div className="py-[1px] px-4 text-sm font-medium text-foreground/60 border-t"></div>
                                                 {adminNavItems.map((props) => (
                                                     <NavigationMenuItem
                                                         key={props.href}
@@ -290,12 +328,12 @@ export function NavBar() {
                                         <div className="mt-4 px-4 py-2 border-t">
                                             {session ? (
                                                 <div className="flex flex-col gap-2">
-                                                    <span className="text-sm text-gray-700">
+                                                    <span className="text-sm text-foreground/80">
                                                         {session.user.name} ({session.user.role})
                                                     </span>
                                                     <button
                                                         onClick={() => signOut()}
-                                                        className="px-3 py-1.5 bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors"
+                                                        className="px-3 py-1.5 bg-accent/10 border border-accent/20 rounded-md text-accent-foreground hover:bg-accent/20 font-medium transition-colors"
                                                     >
                                                         Sign out
                                                     </button>
@@ -303,7 +341,7 @@ export function NavBar() {
                                             ) : (
                                                 <button
                                                     onClick={() => signIn()}
-                                                    className="px-3 py-1.5 bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors"
+                                                    className="px-3 py-1.5 bg-accent/10 border border-accent/20 rounded-md text-accent-foreground hover:bg-accent/20 font-medium transition-colors"
                                                 >
                                                     Sign in
                                                 </button>
@@ -323,14 +361,14 @@ export function NavBar() {
                         {session ? (
                             <button
                                 onClick={() => signOut()}
-                                className="px-3 py-1.5 bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors"
+                                className="px-3 py-1.5 bg-accent/10 border border-accent/20 rounded-md text-accent-foreground hover:bg-accent/20 font-medium transition-colors"
                             >
                                 Sign out
                             </button>
                         ) : (
                             <button
                                 onClick={() => signIn()}
-                                className="px-3 py-1.5 bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors"
+                                className="px-3 py-1.5 bg-accent/10 border border-accent/20 rounded-md text-accent-foreground hover:bg-accent/20 font-medium transition-colors"
                             >
                                 Sign in
                             </button>

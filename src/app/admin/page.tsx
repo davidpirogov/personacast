@@ -2,9 +2,9 @@ import "@/app/globals.css";
 import { Metadata } from "next";
 import { Suspense } from "react";
 import { Loader } from "@/components/ui/loading";
-import GeneralPageSection from "@/components/page-sections/general-page-section";
+import GeneralPageSection from "@/components/sections/general-page-section";
 import Link from "next/link";
-import { Users, KeyRound } from "lucide-react";
+import { Users, KeyRound, Layout } from "lucide-react";
 
 export const metadata: Metadata = {
     title: "Admin",
@@ -15,7 +15,7 @@ const AdminPreambleSection = async () => {
         <GeneralPageSection title="Admin" description="Manage your admin tasks from this page">
             <div className="flex flex-col gap-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Link 
+                    <Link
                         href="/admin/api-clients"
                         className="group p-6 bg-white hover:bg-gray-50 rounded-lg border border-gray-200 shadow-sm transition-all duration-200 hover:shadow-md"
                     >
@@ -30,7 +30,7 @@ const AdminPreambleSection = async () => {
                         </div>
                     </Link>
 
-                    <Link 
+                    <Link
                         href="/admin/users"
                         className="group p-6 bg-white hover:bg-gray-50 rounded-lg border border-gray-200 shadow-sm transition-all duration-200 hover:shadow-md"
                     >
@@ -44,6 +44,23 @@ const AdminPreambleSection = async () => {
                             </div>
                         </div>
                     </Link>
+
+                    <Link
+                        href="/admin/theming"
+                        className="group p-6 bg-white hover:bg-gray-50 rounded-lg border border-gray-200 shadow-sm transition-all duration-200 hover:shadow-md"
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-green-50 rounded-lg group-hover:bg-green-100 transition-colors">
+                                <Layout className="w-6 h-6 text-green-600" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-semibold text-gray-900">Landing Page Theming</h3>
+                                <p className="text-sm text-gray-500">
+                                    Customize landing page content, colors, fonts, and layout
+                                </p>
+                            </div>
+                        </div>
+                    </Link>
                 </div>
             </div>
         </GeneralPageSection>
@@ -52,7 +69,7 @@ const AdminPreambleSection = async () => {
 
 export default async function AdminPage() {
     return (
-        <main className="container mx-auto p-6">
+        <main data-theme="workzone" className="container mx-auto mt-16 p-6">
             <Suspense fallback={<Loader />}>
                 <AdminPreambleSection />
             </Suspense>
