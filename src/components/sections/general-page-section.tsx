@@ -41,7 +41,7 @@ export default async function GeneralPageSection({
     children,
 }: GeneralPageSectionProps) {
     return (
-        <div className="list-page-section">
+        <div className="list-page-section mt-16">
             <div className="mb-4">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl">
