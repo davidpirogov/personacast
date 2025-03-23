@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { UsersTable } from "@/components/data-tables/users-table";
 import { Loader } from "@/components/ui/loading";
 import { Metadata } from "next";
-import ListPageSection from "@/components/page-sections/list-page-section";
+import GeneralPageSection from "@/components/page-sections/general-page-section";
 import { usersService } from "@/services/users-service";
 
 export const metadata: Metadata = {
@@ -13,9 +13,9 @@ const UsersList = async () => {
     const users = await usersService.getAllUsers();
 
     return (
-        <ListPageSection title="Users" description="Manage your users">
+        <GeneralPageSection title="Users" description="Manage your users">
             <UsersTable users={users} />
-        </ListPageSection>
+        </GeneralPageSection>
     );
 };
 

@@ -17,13 +17,13 @@ export class DefaultPodcastService implements PodcastService {
         return this.adapter.getById(id);
     }
 
-    async create(data: Omit<Podcast, "id" | "created_at" | "updated_at">): Promise<Podcast> {
+    async create(data: Omit<Podcast, "id" | "createdAt" | "updatedAt">): Promise<Podcast> {
         return this.adapter.create(data);
     }
 
     async update(
         id: number,
-        data: Partial<Omit<Podcast, "id" | "created_at" | "updated_at">>,
+        data: Partial<Omit<Podcast, "id" | "createdAt" | "updatedAt">>,
     ): Promise<Podcast> {
         return this.adapter.update(id, data);
     }

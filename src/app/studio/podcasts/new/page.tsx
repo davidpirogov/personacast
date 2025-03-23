@@ -4,7 +4,9 @@ import { Loader } from "@/components/ui/loading";
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/database/user";
-
+import GeneralPageSection, {
+    GeneralPageSectionSkeleton,
+} from "@/components/page-sections/general-page-section";
 export const metadata: Metadata = {
     title: "New Podcast",
 };
@@ -16,7 +18,7 @@ export default async function NewPodcastPage() {
     }
 
     return (
-        <Suspense fallback={<Loader />}>
+        <Suspense fallback={<GeneralPageSectionSkeleton />}>
             <NewPodcastForm />
         </Suspense>
     );

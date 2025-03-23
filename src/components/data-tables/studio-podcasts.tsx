@@ -44,11 +44,7 @@ const columns: ColumnDef<Podcast>[] = [
             className: "text-right",
             actions: (podcast: Podcast) => (
                 <>
-                    <Link
-                        href={`/studio/podcasts/${encodeURIComponent(podcast.id)}`}
-                        className="px-4 py-2 bg-white border rounded text-gray-500 border-gray-500"
-                        onClick={(e) => e.stopPropagation()}
-                    >
+                    <Link href={`/studio/podcasts/${encodeURIComponent(podcast.id)}`}>
                         <Button variant="outline" size="icon">
                             <EyeIcon className="h-4 w-4" />
                         </Button>

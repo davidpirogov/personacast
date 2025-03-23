@@ -2,7 +2,7 @@ import "@/app/globals.css";
 import { Metadata } from "next";
 import { Suspense } from "react";
 import { Loader } from "@/components/ui/loading";
-import ListPageSection from "@/components/page-sections/list-page-section";
+import GeneralPageSection from "@/components/page-sections/general-page-section";
 import Link from "next/link";
 import { Users, KeyRound } from "lucide-react";
 
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 const AdminPreambleSection = async () => {
     return (
-        <ListPageSection title="Admin" description="Manage your admin tasks from this page">
+        <GeneralPageSection title="Admin" description="Manage your admin tasks from this page">
             <div className="flex flex-col gap-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Link 
@@ -46,7 +46,7 @@ const AdminPreambleSection = async () => {
                     </Link>
                 </div>
             </div>
-        </ListPageSection>
+        </GeneralPageSection>
     );
 };
 

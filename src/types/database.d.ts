@@ -61,10 +61,10 @@ export interface ApiClient extends BaseRecord {
 export interface DatabaseAdapter<T extends BaseRecord> {
     getAll(tx?: Prisma.TransactionClient): Promise<T[]>;
     getById(id: string, tx?: Prisma.TransactionClient): Promise<T | null>;
-    create(data: Omit<T, "id" | "created_at" | "updated_at">, tx?: Prisma.TransactionClient): Promise<T>;
+    create(data: Omit<T, "id" | "createdAt" | "updatedAt">, tx?: Prisma.TransactionClient): Promise<T>;
     update(
         id: string,
-        data: Partial<Omit<T, "id" | "created_at" | "updated_at">>,
+        data: Partial<Omit<T, "id" | "createdAt" | "updatedAt">>,
         tx?: Prisma.TransactionClient,
     ): Promise<T>;
     delete(id: string, tx?: Prisma.TransactionClient): Promise<void>;
@@ -75,7 +75,7 @@ export interface UuidDatabaseAdapter<T extends BaseRecord> extends DatabaseAdapt
     getById(id: string, tx?: Prisma.TransactionClient): Promise<T | null>;
     update(
         id: string,
-        data: Partial<Omit<T, "id" | "created_at" | "updated_at">>,
+        data: Partial<Omit<T, "id" | "createdAt" | "updatedAt">>,
         tx?: Prisma.TransactionClient,
     ): Promise<T>;
     delete(id: string, tx?: Prisma.TransactionClient): Promise<void>;
@@ -86,7 +86,7 @@ export interface IdDatabaseAdapter<T extends BaseRecord> extends DatabaseAdapter
     getById(id: number, tx?: Prisma.TransactionClient): Promise<T | null>;
     update(
         id: number,
-        data: Partial<Omit<T, "id" | "created_at" | "updated_at">>,
+        data: Partial<Omit<T, "id" | "createdAt" | "updatedAt">>,
         tx?: Prisma.TransactionClient,
     ): Promise<T>;
     delete(id: number, tx?: Prisma.TransactionClient): Promise<void>;
