@@ -12,9 +12,11 @@ export const createApiClientSchema = z.object({
     ...apiClientBase,
 });
 
-export const updateApiClientSchema = z.object({
-    ...apiClientBase,
-}).partial();
+export const updateApiClientSchema = z
+    .object({
+        ...apiClientBase,
+    })
+    .partial();
 
 // Response schemas with field selection
 export const apiClientResponseFields = {
@@ -79,4 +81,19 @@ export const apiClientCreationSingleResponseSchema = z.object({
 
 export type ApiClientListResponse = z.infer<typeof apiClientListResponseSchema>;
 export type ApiClientSingleResponse = z.infer<typeof apiClientSingleResponseSchema>;
-export type ApiClientCreationSingleResponse = z.infer<typeof apiClientCreationSingleResponseSchema>; 
+export type ApiClientCreationSingleResponse = z.infer<typeof apiClientCreationSingleResponseSchema>;
+
+// Concrete schema for API client with required fields
+export const apiClientSchema = z.object({
+    id: z.number(),
+    name: z.string(),
+    description: z.string(),
+    isActive: z.boolean(),
+    createdAt: z.date(),
+    updatedAt: z.date(),
+});
+
+export type ApiClientSchema = z.infer<typeof apiClientSchema>;
+
+export const apiClientListSchema = z.array(apiClientSchema);
+export type ApiClientListSchema = z.infer<typeof apiClientListSchema>;

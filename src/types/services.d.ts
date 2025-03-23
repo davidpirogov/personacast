@@ -1,29 +1,37 @@
 import { Podcast } from "./database";
 
-export interface PodcastService {
+export interface CRUDService<
+    T,
+    CreateDTO = Omit<T, "id" | "created_at" | "updated_at">,
+    UpdateDTO = Partial<CreateDTO>,
+> {
     /**
-     * List all podcasts
+     * List all resources
      */
-    listPodcasts(): Promise<Podcast[]>;
+    list(): Promise<T[]>;
 
     /**
-     * Get a podcast by ID
+     * Get a resource by ID
      */
-    getPodcast(id: number): Promise<Podcast | null>;
+    get(id: number): Promise<T | null>;
 
     /**
-     * Create a new podcast
+     * Create a new resource
      */
-    createPodcast(data: Omit<Podcast, "id" | "created_at" | "updated_at">): Promise<Podcast>;
+    create(data: CreateDTO): Promise<T>;
 
     /**
-     * Update an existing podcast
+     * Update an existing resource
      */
-    updatePodcast(
-        id: number,
-        data: Partial<Omit<Podcast, "id" | "created_at" | "updated_at">>,
-    ): Promise<Podcast>;
+    update(id: number, data: UpdateDTO): Promise<T>;
 
+    /**
+     * Delete a resource
+     */
+    delete(id: number): Promise<void>;
+}
+
+export interface PodcastService extends CRUDService<Podcast> {
     /**
      * Publish a podcast
      */
@@ -33,9 +41,11 @@ export interface PodcastService {
      * Unpublish a podcast
      */
     unpublishPodcast(id: number): Promise<Podcast>;
+}
 
+export interface ApiClientService extends CRUDService<ApiClient> {
     /**
-     * Delete a podcast
+     * Generate a new token for an API client
      */
-    deletePodcast(id: number): Promise<void>;
+    generateToken(id: number): Promise<string>;
 }

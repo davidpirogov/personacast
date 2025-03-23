@@ -1,6 +1,9 @@
 import { User } from "@/types/database";
 import { UsersAdapter } from "@/lib/database/adapters/users";
 
+/**
+ * This service does not follow the pattern of the other services because it has to interface with Authjs
+ */
 export class UsersService {
     private adapter: UsersAdapter;
 
@@ -46,3 +49,5 @@ export class UsersService {
         return this.updateUser(id, { role });
     }
 }
+
+export const usersService = new UsersService();

@@ -1,4 +1,4 @@
-import { ApiClientsService } from "@/services/api-clients-service";
+import { apiClientService } from "@/services/api-client-service";
 import { NextRequest, NextResponse } from "next/server";
 import {
     apiClientListResponseSchema,
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
         const selectParam = searchParams.get("select");
         const select: ApiClientSelect = selectParam ? JSON.parse(selectParam) : apiClientResponseFields;
 
-        const clients = await new ApiClientsService().getAllClients();
+        const clients = await apiClientService.list();
 
         // Validate response against schema with selected fields
         const response = apiClientListResponseSchema.parse({ clients });
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
         // Validate request body against schema
         const validatedData = createApiClientSchema.parse(data);
 
-        const client = await new ApiClientsService().createClient(validatedData);
+        const client = await apiClientService.create(validatedData);
 
         // Validate response against creation schema that includes token
         const response = apiClientCreationSingleResponseSchema.parse({ client });

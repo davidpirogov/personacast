@@ -1,23 +1,24 @@
 import { ApiClient } from "@/types/database";
 import ApiClientsAdapter from "@/lib/database/adapters/api-clients";
 import crypto from "crypto";
+import { ApiClientService } from "@/types/services";
 
-export class ApiClientsService {
+export class DefaultApiClientService implements ApiClientService {
     private adapter: ApiClientsAdapter;
 
     constructor() {
         this.adapter = new ApiClientsAdapter();
     }
 
-    async getAllClients(): Promise<ApiClient[]> {
+    async list(): Promise<ApiClient[]> {
         return this.adapter.getAll();
     }
 
-    async getClientById(id: number): Promise<ApiClient | null> {
+    async get(id: number): Promise<ApiClient | null> {
         return this.adapter.getById(id);
     }
 
-    async createClient(data: Pick<ApiClient, "name" | "description" | "isActive">): Promise<ApiClient> {
+    async create(data: Pick<ApiClient, "name" | "description" | "isActive">): Promise<ApiClient> {
         const token = await this.generateToken();
         return this.adapter.create({
             ...data,
@@ -27,14 +28,14 @@ export class ApiClientsService {
         });
     }
 
-    async updateClient(
+    async update(
         id: number,
         data: Partial<Omit<ApiClient, "id" | "created_at" | "updated_at">>,
     ): Promise<ApiClient> {
         return this.adapter.update(id, data);
     }
 
-    async deleteClient(id: number): Promise<void> {
+    async delete(id: number): Promise<void> {
         return this.adapter.delete(id);
     }
 
@@ -43,3 +44,5 @@ export class ApiClientsService {
         return crypto.randomBytes(32).toString("hex");
     }
 }
+
+export const apiClientService = new DefaultApiClientService();

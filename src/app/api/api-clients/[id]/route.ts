@@ -1,4 +1,4 @@
-import { ApiClientsService } from "@/services/api-clients-service";
+import { apiClientService } from "@/services/api-client-service";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
@@ -9,7 +9,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
             return NextResponse.json({ error: "API client ID is required" }, { status: 400 });
         }
 
-        await new ApiClientsService().deleteClient(id);
+        await apiClientService.delete(Number(id));
 
         return NextResponse.json({ success: true });
     } catch (error) {
