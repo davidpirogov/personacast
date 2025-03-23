@@ -8,4 +8,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
+RUN mkdir -p /workspace/data && chmod 0755 /workspace/data
+
 WORKDIR /workspace
