@@ -1,79 +1,65 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { auth } from "@/auth";
-import { isRoleAnAuthenticatedRole } from "@/lib/database/user";
+import { applyRateLimiting } from "@/middleware/rate-limit";
+import { handleAuthentication, addAuthHeaders, addMiddlewareHeaders } from "@/middleware/authentication";
+import { handleStaticRoutes } from "@/middleware/static-routes";
 
 // Export the middleware function
 export default async function middleware(req: NextRequest) {
-    // Get the current path
-    const { pathname } = req.nextUrl;
+    const responseHeaders: Record<string, string> = {};
+    const edgeToken = req.headers.get("x-edge-token");
+    const isEdgeRuntime = req.headers.get("x-edge-runtime");
 
-    // Always allow auth-related paths, static assets, and session checks
-    if (
-        pathname.startsWith("/api/auth") ||
-        pathname === "/" ||
-        pathname.startsWith("/_next") ||
-        pathname === "/api/auth/session"
-    ) {
+    const startTime = Date.now();
+
+    if (isEdgeRuntime === "1" && edgeToken === process.env.AUTH_EDGE_TOKEN) {
+        // This is an edge runtime request, so we can skip rate limiting and other checks
+        // because they have been done at the edge runtime
         return NextResponse.next();
     }
 
-    const session = await auth();
-
-    // Handle API routes
-    if (pathname.startsWith("/api/")) {
-        const bearerToken = req.headers.get("Authorization")?.split(" ")[1];
-
-        // If there's a bearer token, validate it as an API client
-        if (bearerToken) {
-            try {
-                const validateResponse = await fetch(new URL("/api/auth/validate-token", req.url), {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ token: bearerToken }),
-                });
-
-                const { valid } = await validateResponse.json();
-
-                if (!valid) {
-                    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-                }
-
-                // If token is valid, allow the request without checking session
-                return NextResponse.next();
-            } catch (error) {
-                console.error("Error validating token:", error);
-                return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // The rate limit middleware returns a response and headers because we need
+    // to know how many requests are left and the rate limit headers
+    const rateLimitResponse = await applyRateLimiting(req);
+    if (rateLimitResponse.status === 429) {
+        return NextResponse.json(rateLimitResponse.body, {
+            status: rateLimitResponse.status,
+            headers: responseHeaders,
+        });
+    } else if (rateLimitResponse.headers !== null) {
+        rateLimitResponse.headers?.forEach((value, key) => {
+            if (key.toLowerCase().startsWith("x-ratelimit")) {
+                responseHeaders[key] = value;
             }
-        }
-
-        // If no bearer token, check for session-based auth
-        if (!session) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
-
-        return NextResponse.next();
+        });
     }
 
-    // For non-API routes, require session authentication
-    const isAuthenticated = isRoleAnAuthenticatedRole(session?.user?.role);
-
-    // Redirect to home if not authenticated with correct role
-    if (!isAuthenticated) {
-        const signInUrl = new URL("/", req.url);
-        return NextResponse.redirect(signInUrl);
+    const staticResponse = await handleStaticRoutes(req);
+    if (staticResponse) {
+        addMiddlewareHeaders(staticResponse, new Headers(responseHeaders));
+        return staticResponse;
     }
 
-    // Clone the response to add session header
+    const authResponse = await handleAuthentication(req);
+    if (authResponse) {
+        // Copy headers to the auth response
+        addMiddlewareHeaders(authResponse, new Headers(responseHeaders));
+        return authResponse;
+    }
+
     const response = NextResponse.next();
 
-    // Add session information to response headers
-    response.headers.set("x-auth-status", "authenticated");
-    if (session?.user?.role) {
-        response.headers.set("x-auth-role", session.user.role);
+    const session = await auth();
+    if (session) {
+        addAuthHeaders(response, session);
     }
+
+    response.headers.set("x-process-time", `${Date.now() - startTime}ms`);
+
+    // Add all the headers collected through the middleware chains
+    // into a header object for the response
+    addMiddlewareHeaders(response, new Headers(responseHeaders));
 
     return response;
 }
