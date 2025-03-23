@@ -3,7 +3,7 @@
     "version": "1.0.2",
     "private": true,
     "scripts": {
-        "dev": "pnpm exec next telemetry disable && pnpm exec next dev --turbopack",
+        "dev": "pnpm run clean && pnpm exec next telemetry disable && pnpm exec next dev --turbopack",
         "build": "pnpm exec next telemetry disable && pnpm exec next build",
         "start": "pnpm exec next telemetry disable && pnpm exec next start",
         "lint": "pnpm exec next telemetry disable && pnpm exec next lint",
