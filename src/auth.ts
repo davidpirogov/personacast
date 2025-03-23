@@ -1,4 +1,4 @@
-import NextAuth, { type DefaultSession } from "next-auth";
+import NextAuth from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 import type { Role } from "next-auth";
 import { AuthenticationAdapter } from "@/lib/database/adapters/authentication";
@@ -44,6 +44,9 @@ export const {
             }
             return session;
         },
+    },
+    pages: {
+        signIn: "/signin",
     },
     session: {
         strategy: "jwt",

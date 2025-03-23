@@ -10,7 +10,6 @@ export default async function middleware(req: NextRequest) {
     const responseHeaders: Record<string, string> = {};
     const edgeToken = req.headers.get("x-edge-token");
     const isEdgeRuntime = req.headers.get("x-edge-runtime");
-
     const startTime = Date.now();
 
     if (isEdgeRuntime === "1" && edgeToken === process.env.AUTH_EDGE_TOKEN) {
