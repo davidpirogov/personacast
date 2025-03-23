@@ -138,8 +138,6 @@ export function NavBar() {
     const useLandingTheme = !isAdminSection && !isStudioSection;
     const navBarClassName = navBarClasses(useLandingTheme);
 
-    console.log("navBarClassName", navBarClassName);
-
     return (
         <nav data-theme={useLandingTheme ? "landing" : "workzone"} className={navBarClassName}>
             <div className="container mx-auto px-4">
