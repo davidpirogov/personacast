@@ -65,6 +65,16 @@ const adminNavItems: NavItem[] = [
         className: "text-foreground transition-colors",
         children: "Theming",
     },
+    {
+        href: "/admin/files",
+        className: "text-foreground transition-colors",
+        children: "Files",
+    },
+    {
+        href: "/admin/variables",
+        className: "text-foreground transition-colors",
+        children: "Variables",
+    },
 ];
 
 function Avatar({ src, alt }: { src?: string | null; alt: string }) {

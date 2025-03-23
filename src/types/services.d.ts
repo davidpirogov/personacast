@@ -49,3 +49,37 @@ export interface ApiClientService extends CRUDService<ApiClient> {
      */
     generateToken(id: number): Promise<string>;
 }
+
+export interface VariablesService extends CRUDService<Variable> {
+    /**
+     * Get a variable by name
+     */
+    getByName(name: string): Promise<Variable | null>;
+}
+
+export interface FileMetadataService extends CRUDService<FileMetadata> {
+    /**
+     * Get a file by ID
+     */
+    get(id: string): Promise<FileMetadata | null>;
+
+    /**
+     * Upload a file
+     */
+    upload(file: File): Promise<FileMetadata>;
+
+    /**
+     * Update an existing file
+     */
+    update(id: string, data: UpdateDTO): Promise<FileMetadata>;
+
+    /**
+     * Delete a file
+     */
+    delete(id: string): Promise<void>;
+
+    /**
+     * Get a file by name
+     */
+    getByName(name: string): Promise<FileMetadata | null>;
+}

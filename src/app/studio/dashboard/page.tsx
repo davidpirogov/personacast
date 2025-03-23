@@ -3,7 +3,7 @@ import { Metadata } from "next";
 import { podcastService } from "@/services/podcast-service";
 import { StudioPodcastsTable } from "@/components/data-tables/studio-podcasts";
 import { Suspense } from "react";
-import GeneralPageSection, { GeneralPageSectionSkeleton } from "@/components/page-sections/general-page-section";
+import GeneralPageSection, { GeneralPageSectionSkeleton } from "@/components/sections/general-page-section";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -31,7 +31,7 @@ const PodcastList = async () => {
 
 export default async function StudioDashboardPage() {
     return (
-        <main className="container mx-auto p-6">
+        <main data-theme="workzone" className="container mx-auto p-6">
             <Suspense fallback={<GeneralPageSectionSkeleton />}>
                 <PodcastList />
             </Suspense>

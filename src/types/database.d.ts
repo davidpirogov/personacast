@@ -57,6 +57,25 @@ export interface ApiClient extends BaseRecord {
     isActive: boolean;
 }
 
+// Variable specific fields
+export interface Variable extends BaseRecord {
+    id: number;
+    name: string;
+    value: string;
+}
+
+export interface FileMetadata extends BaseRecord {
+    id: string;
+    name: string;
+    path: string;
+    size: number;
+    mimeType: string;
+    width: number | null;
+    height: number | null;
+    duration: number | null;
+    url: string;
+}
+
 // Generic database adapter interface
 export interface DatabaseAdapter<T extends BaseRecord> {
     getAll(tx?: Prisma.TransactionClient): Promise<T[]>;
@@ -92,9 +111,15 @@ export interface IdDatabaseAdapter<T extends BaseRecord> extends DatabaseAdapter
     delete(id: number, tx?: Prisma.TransactionClient): Promise<void>;
 }
 
+export interface IdNameDatabaseAdapter<T extends BaseRecord> extends IdDatabaseAdapter<T> {
+    getByName(name: string, tx?: Prisma.TransactionClient): Promise<T | null>;
+}
+
 // Concrete adapter types
 export type UsersAdapterType = UuidDatabaseAdapter<User>;
 export type AccountsAdapterType = UuidDatabaseAdapter<Account>;
 export type PodcastsAdapterType = IdDatabaseAdapter<Podcast>;
 export type EpisodesAdapterType = IdDatabaseAdapter<Episode>;
 export type ApiClientsAdapterType = IdDatabaseAdapter<ApiClient>;
+export type VariablesAdapterType = IdNameDatabaseAdapter<Variable>;
+export type FilesAdapterType = UuidDatabaseAdapter<FileMetadata>;

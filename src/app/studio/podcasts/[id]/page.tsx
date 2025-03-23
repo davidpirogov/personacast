@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { Metadata } from "next";
 import GeneralPageSection, {
     GeneralPageSectionSkeleton,
-} from "@/components/page-sections/general-page-section";
+} from "@/components/sections/general-page-section";
 import { podcastService } from "@/services/podcast-service";
 import { EpisodeList } from "./episode-list";
 import { PodcastOverview } from "./podcast-overview";

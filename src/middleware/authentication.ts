@@ -5,11 +5,27 @@ import { isRoleAnAuthenticatedRole } from "@/lib/database/user";
 import { Session } from "next-auth";
 
 // Define public routes that don't require authentication
-const PUBLIC_ROUTES = ["/", "/podcasts", "/auth/signin", "/auth/error"];
+const PUBLIC_ROUTES = ["/", "/signin", "/auth/error", "/podcasts", "/podcasts/feed.xml"];
+
+// Define public route patterns that are matched using regex
+const PUBLIC_ROUTE_PATTERNS = [
+    /^\/podcasts\/[^/]+$/, // Individual podcast pages: /podcasts/[slug]
+    /^\/podcasts\/[^/]+\/episodes$/, // Episode listing: /podcasts/[slug]/episodes
+    /^\/podcasts\/[^/]+\/episodes\/[^/]+$/, // Individual episodes: /podcasts/[slug]/episodes/[episodeSlug]
+    /^\/podcasts\/[^/]+\/feed\.xml$/, // Podcast RSS feed: /podcasts/[slug]/feed.xml
+];
 
 export async function handleAuthentication(req: NextRequest): Promise<NextResponse | null> {
     const { pathname } = req.nextUrl;
     const session = await auth();
+
+    // Check if the route is public
+    const isPublicRoute =
+        PUBLIC_ROUTES.includes(pathname) || PUBLIC_ROUTE_PATTERNS.some((pattern) => pattern.test(pathname));
+
+    if (isPublicRoute) {
+        return null; // Allow access to public routes without authentication
+    }
 
     // Handle API routes
     if (pathname.startsWith("/api/")) {
@@ -49,11 +65,6 @@ export async function handleAuthentication(req: NextRequest): Promise<NextRespon
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        return null;
-    }
-
-    // Allow access to public routes without authentication
-    if (PUBLIC_ROUTES.includes(pathname)) {
         return null;
     }
 

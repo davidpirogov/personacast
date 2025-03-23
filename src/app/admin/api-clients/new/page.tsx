@@ -81,7 +81,7 @@ export default function NewApiClientPage() {
     }
 
     return (
-        <main className="container mx-auto max-w-md p-6">
+        <main className="container mx-auto mt-32 p-6">
             <Card className="max-w-2xl mx-auto">
                 <CardHeader>
                     <CardTitle>New API Client</CardTitle>

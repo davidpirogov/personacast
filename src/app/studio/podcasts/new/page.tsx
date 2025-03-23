@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/database/user";
 import GeneralPageSection, {
     GeneralPageSectionSkeleton,
-} from "@/components/page-sections/general-page-section";
+} from "@/components/sections/general-page-section";
 export const metadata: Metadata = {
     title: "New Podcast",
 };

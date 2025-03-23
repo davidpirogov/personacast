@@ -1,18 +1,36 @@
 import { Suspense } from "react";
-import { UsersTable } from "@/components/data-tables/users-table";
 import { Loader } from "@/components/ui/loading";
 import { Metadata } from "next";
 import GeneralPageSection from "@/components/sections/general-page-section";
-import { usersService } from "@/services/users-service";
+import { variablesService } from "@/services/variables-service";
+import { DEFAULT_SITE_SETTINGS, SITE_SETTINGS_NAME } from "./defaults";
+import ThemingPreview from "./preview";
 
 export const metadata: Metadata = {
     title: "Landing | Admin",
 };
 
 const LandingPageAdminSection = async () => {
+    let site_settings_variable = await variablesService.getByName(SITE_SETTINGS_NAME);
+    if (!site_settings_variable) {
+        await variablesService.create({
+            name: SITE_SETTINGS_NAME,
+            value: JSON.stringify(DEFAULT_SITE_SETTINGS),
+        });
+        site_settings_variable = await variablesService.getByName(SITE_SETTINGS_NAME);
+    }
+
+    if (!site_settings_variable) {
+        throw new Error("Site settings variable not found");
+    }
+
+    const site_settings = JSON.parse(site_settings_variable.value);
+
+    console.log(site_settings);
+
     return (
         <GeneralPageSection title="Landing Page Settings" description="Manage your landing page settings">
-            TODO
+            <ThemingPreview settings={site_settings} />
         </GeneralPageSection>
     );
 };
