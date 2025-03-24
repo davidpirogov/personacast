@@ -17,14 +17,24 @@ import { toast } from "sonner";
 interface DeleteRecordDialogProps<T> {
     record: T;
     title: string;
+    description?: string | JSX.Element | null;
     deleteUrl: string;
     onDelete: (record: T) => Promise<void>;
 }
 
-export function DeleteRecordDialog<T>({ record, title, deleteUrl, onDelete }: DeleteRecordDialogProps<T>) {
+export function DeleteRecordDialog<T>({
+    record,
+    title,
+    deleteUrl,
+    onDelete,
+    description = null,
+}: DeleteRecordDialogProps<T>) {
     const [isOpen, setIsOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const router = useRouter();
+
+    const displayedDescription =
+        description ?? `Are you sure you want to delete the "${title}"? This action cannot be undone.`;
 
     const handleDelete = async () => {
         try {
@@ -49,6 +59,9 @@ export function DeleteRecordDialog<T>({ record, title, deleteUrl, onDelete }: De
         }
     };
 
+    const maxLengthTitle = 48;
+    const displayedTitle = title.length > maxLengthTitle ? `${title.slice(0, maxLengthTitle)}...` : title;
+
     return (
         <>
             <Button variant="ghost" size="sm" onClick={() => setIsOpen(true)}>
@@ -57,11 +70,10 @@ export function DeleteRecordDialog<T>({ record, title, deleteUrl, onDelete }: De
 
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
                 <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>{title}</DialogTitle>
-                        <DialogDescription>
-                            Are you sure you want to delete the &quot;{title}&quot;? This action cannot be
-                            undone.
+                    <DialogHeader className="space-y-2 overflow-hidden">
+                        <DialogTitle className="break-words pr-6">{displayedTitle}</DialogTitle>
+                        <DialogDescription className="break-words whitespace-pre-wrap">
+                            {displayedDescription}
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>

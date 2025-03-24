@@ -11,71 +11,8 @@ import { signIn, signOut } from "next-auth/react";
 import { usePermissions } from "@/lib/hooks/usePermissions";
 import { useSessionState } from "@/lib/hooks/use-session-state";
 import Image from "next/image";
-import { Role } from "next-auth";
 import { navBarClasses } from "./classes";
-
-type NavItem = {
-    href: string;
-    className: string;
-    children: string;
-    exact?: boolean;
-    roles?: Role[];
-};
-
-const navItems: NavItem[] = [
-    {
-        href: "/",
-        className: "text-foreground transition-colors",
-        children: "Home",
-        roles: [],
-    },
-    {
-        href: "/podcasts",
-        className: "text-foreground transition-colors",
-        children: "Podcasts",
-        roles: [],
-    },
-    {
-        href: "/studio",
-        className: "text-foreground transition-colors",
-        children: "Studio",
-        roles: ["podcaster:editor", "podcaster:admin"],
-    },
-    {
-        href: "/admin",
-        className: "text-foreground transition-colors",
-        children: "Admin",
-        roles: ["podcaster:admin"],
-    },
-];
-
-const adminNavItems: NavItem[] = [
-    {
-        href: "/admin/api-clients",
-        className: "text-foreground transition-colors",
-        children: "API Clients",
-    },
-    {
-        href: "/admin/users",
-        className: "text-foreground transition-colors",
-        children: "Users",
-    },
-    {
-        href: "/admin/theming",
-        className: "text-foreground transition-colors",
-        children: "Theming",
-    },
-    {
-        href: "/admin/files",
-        className: "text-foreground transition-colors",
-        children: "Files",
-    },
-    {
-        href: "/admin/variables",
-        className: "text-foreground transition-colors",
-        children: "Variables",
-    },
-];
+import { navItems, adminNavItems } from "./menu-items";
 
 function Avatar({ src, alt }: { src?: string | null; alt: string }) {
     return (
