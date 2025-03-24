@@ -12,7 +12,7 @@ export function ThemeProvider({ className, children }: ThemeProviderProps) {
     const pathname = usePathname();
 
     // Define paths that should use the landing theme
-    const isLandingThemePath = ["", "/", "/podcasts"].includes(pathname);
+    const isLandingThemePath = ["", "/", "/podcasts", "/signin"].includes(pathname);
     const theme = isLandingThemePath ? "landing" : "workzone";
 
     // Update the theme on the body element when pathname changes
