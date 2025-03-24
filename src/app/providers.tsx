@@ -8,7 +8,7 @@ import { NavBar } from "@/components/ui/nav-bar/nav-bar";
 export function Providers({ children }: { children: React.ReactNode }) {
     return (
         <ThemeProvider>
-            <SessionProvider session={null}>
+            <SessionProvider>
                 <NavBar />
                 {children}
                 <Toaster />

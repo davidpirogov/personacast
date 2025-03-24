@@ -7,16 +7,20 @@ import { Loader } from "@/components/ui/loading";
 
 interface SessionCheckProps {
     redirectTo?: string;
+    redirectIfOnPage?: boolean;
 }
 
-export function SessionCheck({ redirectTo = "/" }: SessionCheckProps) {
+export function SessionCheck({ redirectTo = "/", redirectIfOnPage = true }: SessionCheckProps) {
     const { data: session, status } = useSession();
 
     useEffect(() => {
-        if (session) {
+        // Only redirect if we have a session and either:
+        // 1. We're not already on the page we're redirecting to (prevents infinite loop)
+        // 2. redirectIfOnPage is true (explicit override)
+        if (session && (window.location.pathname !== redirectTo || redirectIfOnPage)) {
             redirect(redirectTo);
         }
-    }, [session, redirectTo]);
+    }, [session, redirectTo, redirectIfOnPage]);
 
     if (status === "loading") {
         return <Loader />;

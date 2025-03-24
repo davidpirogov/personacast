@@ -3,8 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 
-// This component renders a script tag that runs on the client to set
-// the theme attribute on the body element before React hydration
+// This component handles setting the theme based on the current path
 export function ThemeScript() {
     const pathname = usePathname();
 
@@ -13,23 +12,13 @@ export function ThemeScript() {
         return ["", "/", "/podcasts"].includes(path) ? "landing" : "workzone";
     };
 
-    // Set theme on initial render and when pathname changes
+    // Set theme when component mounts and when pathname changes
+    // This runs after hydration so there won't be hydration mismatches
     useEffect(() => {
-        document.body.setAttribute("data-theme", getTheme(pathname));
+        const theme = getTheme(pathname);
+        document.body.setAttribute("data-theme", theme);
     }, [pathname]);
 
-    // Inline script to set theme on initial page load before hydration
-    return (
-        <script
-            dangerouslySetInnerHTML={{
-                __html: `
-          (function() {
-            var path = window.location.pathname;
-            var isLandingPath = ['', '/', '/podcasts'].includes(path);
-            document.body.setAttribute('data-theme', isLandingPath ? 'landing' : 'workzone');
-          })();
-        `,
-            }}
-        />
-    );
+    // Return null instead of a script tag to avoid hydration issues
+    return null;
 }

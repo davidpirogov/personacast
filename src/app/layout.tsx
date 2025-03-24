@@ -18,9 +18,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     return (
         <html lang="en">
             <head>
-                <ThemeScript />
             </head>
             <body className={inter.className}>
+                <ThemeScript />
                 <Providers>{children}</Providers>
             </body>
         </html>

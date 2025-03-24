@@ -6,7 +6,7 @@ import { Session } from "next-auth";
 
 const REFRESH_INTERVAL = 5 * 60;
 
-export function SessionProvider({ children, session }: { children: ReactNode; session: Session | null }) {
+export function SessionProvider({ children, session }: { children: ReactNode; session?: Session | null }) {
     return (
         <NextAuthSessionProvider
             refetchInterval={REFRESH_INTERVAL}

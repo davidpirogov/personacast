@@ -8,6 +8,7 @@ import { SessionCheck } from "@/components/auth/session-check";
 import { generateMetadata as genMeta } from "./head";
 import { HeroImagesPreloader } from "./preloaders";
 import { HeadResourceHints } from "./head-resource-hints";
+import { generatePreloadLinks } from "./head";
 
 // Revalidate every 24 hours (in seconds)
 export const revalidate = 86400;
@@ -55,28 +56,22 @@ export default async function LandingPage() {
     // Fetch site settings at build/revalidation time - cached by ISR
     const siteSettings = await getSiteSettings();
 
+    // Use the server-safe generatePreloadLinks function instead
+    const preloadLinks = generatePreloadLinks(siteSettings);
+
     return (
         <>
             {/* Add resource hints to improve loading performance */}
             <HeadResourceHints settings={siteSettings} />
             {/* Preload hero images using the Next.js Image API */}
             <Suspense>
-                <HeroImagesPreloader
-                    preloadLinks={siteSettings.hero.images.map((img) => ({
-                        rel: "preload",
-                        as: "image",
-                        href: img.paths.webp,
-                        type: "image/webp",
-                        imageSizes: "100vw",
-                        fetchPriority: img.size === "lg" ? "high" : "auto",
-                    }))}
-                />
+                <HeroImagesPreloader preloadLinks={preloadLinks} />
             </Suspense>
 
             <main className="min-h-screen bg-background">
                 {/* Client component for session check */}
                 <Suspense fallback={<Loader />}>
-                    <SessionCheck />
+                    <SessionCheck redirectIfOnPage={false} />
                 </Suspense>
 
                 {/* Server component with preloaded settings */}
