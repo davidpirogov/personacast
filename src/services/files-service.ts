@@ -1,9 +1,10 @@
+import { InvalidPathError } from "@/app/api/files/safe-path";
 import { FilesAdapter } from "@/lib/database/adapters/files";
 import { MIME_TYPES } from "@/lib/mime-types";
 import { FileMetadata, FilesAdapterType } from "@/types/database";
 import { FileMetadataService } from "@/types/services";
 import { ffprobe } from "fluent-ffmpeg";
-import { mkdir, writeFile } from "fs/promises";
+import { mkdir, unlink, writeFile, readdir, readFile, access, rmdir } from "fs/promises";
 import { join, resolve } from "path";
 import sharp from "sharp";
 import { v4 as uuidv4 } from "uuid";
@@ -47,8 +48,74 @@ export class DefaultFileMetadataService implements FileMetadataService {
         return this.adapter.update(id, data);
     }
 
+    /**
+     * Deletes a file and all its associated resources (thumbnails, metadata) from the system.
+     *
+     * This method performs a complete cleanup by:
+     * 1. Deleting all generated thumbnails associated with the file
+     * 2. Removing the original file from disk
+     * 3. Deleting the file metadata from the database
+     * 4. Cleaning up empty directories if this was the last file
+     *
+     * The deletion process is resilient - if any step fails, it logs the error and continues
+     * with the remaining steps to ensure maximum cleanup is performed.
+     *
+     * @param id - The unique identifier of the file to delete
+     * @throws {Error} If the file metadata is not found in the database
+     * @returns {Promise<void>} A promise that resolves when all deletion steps are complete
+     *
+     * Directory Structure:
+     * - Files are stored in subdirectories named by the first 2 characters of their ID
+     * - Example: For ID "abc123", the file is stored in "/files/ab/abc123.ext"
+     *
+     * Error Handling:
+     * - Each deletion step (thumbnails, file, metadata, directory) is handled independently
+     * - Failures in one step don't prevent attempts of other steps
+     * - All errors are logged but don't stop the process
+     */
     async delete(id: string): Promise<void> {
-        await this.adapter.delete(id);
+        const fileMetadata = await this.get(id);
+        if (!fileMetadata) {
+            throw new Error("File not found");
+        }
+
+        const dirPrefix = fileMetadata.id.substring(0, 2);
+
+        // Get all thumbnails for the file
+        const thumbnails = await this.getThumbnails(id);
+
+        // Delete all thumbnails from disk
+        for (const thumbnail of thumbnails) {
+            try {
+                await unlink(join(this.appDataDir, thumbnail));
+            } catch (error) {
+                console.error("Error deleting thumbnail from disk:", error);
+            }
+        }
+
+        try {
+            // Delete the file from disk
+            await unlink(join(this.appDataDir, fileMetadata.path));
+        } catch (error) {
+            console.error("Error deleting file from disk:", error);
+        }
+
+        try {
+            // Delete the file metadata from the database
+            await this.adapter.delete(id);
+        } catch (error) {
+            console.error("Error deleting file metadata from the database:", error);
+        }
+
+        try {
+            // Check the directory if it is the last file in the directory
+            const files = await readdir(join(this.appDataDir, "files", dirPrefix));
+            if (files.length === 0) {
+                await rmdir(join(this.appDataDir, "files", dirPrefix));
+            }
+        } catch (error) {
+            console.error("Error deleting directory:", error);
+        }
     }
 
     async getByName(name: string): Promise<FileMetadata | null> {
@@ -132,7 +199,7 @@ export class DefaultFileMetadataService implements FileMetadataService {
 
         // Construct relative path and URL
         const relativePath = `files/${dirPrefix}/${fileName}`;
-        const url = `/api/files/${fileId}.${fileExt}`;
+        const url = `/api/files/${fileId}`;
 
         // Create file metadata record
         const fileMetadata = await filesService.create({
@@ -148,6 +215,109 @@ export class DefaultFileMetadataService implements FileMetadataService {
         });
 
         return fileMetadata;
+    }
+
+    async getPathsForResizeOperation(
+        fileMetadata: FileMetadata,
+        width: number,
+        height: number,
+    ): Promise<{ originalFilePath: string; resizedPath: string; exists: boolean }> {
+        const originalFilePath = join(this.appDataDir, fileMetadata.path);
+        const dirPrefix = fileMetadata.id.substring(0, 2);
+        const ext = "." + fileMetadata.name.split(".").pop()?.toLowerCase();
+        const resizedFileName = `${fileMetadata.id}-${width}x${height}${ext}`;
+        const resizedDir = join(this.appDataDir, "files", dirPrefix);
+        const resizedPath = join(resizedDir, resizedFileName);
+
+        // Ensure paths are within APP_DATA directory
+        const resolvedResizedPath = resolve(resizedPath);
+        if (!resolvedResizedPath.startsWith(resolve(this.appDataDir))) {
+            throw new InvalidPathError("Invalid path");
+        }
+
+        // Check if the resizedPath already exists
+        let resizedPathExists = false;
+        try {
+            await access(resizedPath);
+            resizedPathExists = true;
+        } catch (error) {
+            // File doesn't exist, which is what we want
+            if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+                resizedPathExists = false;
+            } else {
+                // Re-throw any other errors
+                throw error;
+            }
+        }
+
+        return {
+            originalFilePath,
+            resizedPath,
+            exists: resizedPathExists,
+        };
+    }
+
+    async resizeImage(fileMetadata: FileMetadata, width: number, height: number): Promise<string> {
+        if (!fileMetadata.mimeType.startsWith("image/")) {
+            throw new Error("File is not an image");
+        }
+
+        const { originalFilePath, resizedPath } = await this.getPathsForResizeOperation(
+            fileMetadata,
+            width,
+            height,
+        );
+
+        return this.resizeImageOnDisk(originalFilePath, resizedPath, width, height);
+    }
+
+    async resizeImageOnDisk(
+        sourcePath: string,
+        destinationPath: string,
+        width: number,
+        height: number,
+    ): Promise<string> {
+        if (!sourcePath || !destinationPath) {
+            throw new Error("Invalid source or destination path");
+        }
+
+        if (!sourcePath.startsWith(resolve(this.appDataDir))) {
+            throw new InvalidPathError("Invalid source path");
+        }
+
+        if (!destinationPath.startsWith(resolve(this.appDataDir))) {
+            throw new InvalidPathError("Invalid destination path");
+        }
+
+        await sharp(sourcePath).resize(width, height).toFile(destinationPath);
+
+        return destinationPath;
+    }
+
+    async getThumbnails(id: string): Promise<string[]> {
+        const fileMetadata = await this.get(id);
+        if (!fileMetadata) {
+            throw new Error("File not found");
+        }
+
+        // Get the directory where the file and its thumbnails are stored
+        const dirPrefix = id.substring(0, 2);
+        const dir = join(this.appDataDir, "files", dirPrefix);
+
+        try {
+            // Read all files in the directory
+            const files = await readdir(dir);
+
+            // Filter for files that start with the file ID and are not the original file
+            const thumbnails = files
+                .filter((file) => file.startsWith(id + "-"))
+                .map((file) => join("files", dirPrefix, file));
+
+            return thumbnails;
+        } catch (error) {
+            console.error("Error getting thumbnails:", error);
+            return [];
+        }
     }
 }
 

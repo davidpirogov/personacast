@@ -3,15 +3,23 @@ import { join, resolve } from "path";
 import { readFile, lstat } from "fs/promises";
 import { existsSync } from "fs";
 import { MIME_TYPES } from "@/lib/mime-types";
-import { validatePath, InvalidPathError, FileNotFoundError } from "../safe-path";
+import { validatePath, InvalidPathError, FileNotFoundError } from "../../safe-path";
+import { filesService } from "@/services/files-service";
 
-export async function GET(request: NextRequest, context: { params: { path: string[] } }) {
+export async function GET(request: NextRequest, context: { params: { id: string } }) {
     try {
         // Get and await params
         const params = await context.params;
 
-        // Validate path using our new function
-        validatePath(params.path);
+        const fileMetadata = await filesService.get(params.id);
+
+        if (!fileMetadata) {
+            return new NextResponse("File not found", { status: 404 });
+        }
+
+        // Validate path, protecting against directory traversal attacks from the database
+        const pathSegments = fileMetadata.path.split("/");
+        validatePath(pathSegments);
 
         // Get the APP_DATA directory
         const appDataDir = process.env.APP_DATA;
@@ -20,7 +28,7 @@ export async function GET(request: NextRequest, context: { params: { path: strin
         }
 
         // Normalize paths to handle encoding tricks
-        const normalizedPath = params.path.map((segment) => decodeURIComponent(segment).normalize("NFKC"));
+        const normalizedPath = pathSegments.map((segment) => decodeURIComponent(segment).normalize("NFKC"));
 
         // Construct safe path
         const safePath = normalizedPath

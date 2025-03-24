@@ -29,8 +29,6 @@ export const podcastCreateRequestSchema = z.object({
     description: z.string().min(1, "Description is required"),
     published: z.boolean().default(false),
     publishedAt: z.date().nullable().default(null),
-    createdAt: z.date().default(() => new Date()),
-    updatedAt: z.date().default(() => new Date()),
 });
 export type PodcastCreateRequest = z.infer<typeof podcastCreateRequestSchema>;
 
