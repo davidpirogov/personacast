@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { type ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
 
 interface ThemeProviderProps {
     className?: string;
@@ -13,13 +13,13 @@ export function ThemeProvider({ className, children }: ThemeProviderProps) {
 
     // Define paths that should use the landing theme
     const isLandingThemePath = ["", "/", "/podcasts"].includes(pathname);
+    const theme = isLandingThemePath ? "landing" : "workzone";
 
-    return (
-        <div
-            data-theme={isLandingThemePath ? "landing" : "workzone"}
-            className={`${className} transition-colors duration-300 ease-in-out`}
-        >
-            {children}
-        </div>
-    );
+    // Update the theme on the body element when pathname changes
+    useEffect(() => {
+        document.body.setAttribute("data-theme", theme);
+    }, [theme]);
+
+    // Just render children with any additional classes
+    return <div className={className}>{children}</div>;
 }
