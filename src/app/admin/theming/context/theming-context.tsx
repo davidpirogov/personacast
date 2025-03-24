@@ -30,8 +30,6 @@ type ThemingAction =
     | { type: "RESET"; payload: SiteSettings };
 
 function themingReducer(state: ThemingState, action: ThemingAction): ThemingState {
-    console.log("themingReducer action:", action.type, action.payload);
-    
     switch (action.type) {
         case "UPDATE_SETTINGS":
             return {
@@ -40,7 +38,6 @@ function themingReducer(state: ThemingState, action: ThemingAction): ThemingStat
                 isDirty: true,
             };
         case "UPDATE_HERO_IMAGE":
-            console.log("UPDATE_HERO_IMAGE - Previous state:", state);
             const newState = {
                 ...state,
                 settings: {
@@ -52,7 +49,6 @@ function themingReducer(state: ThemingState, action: ThemingAction): ThemingStat
                 },
                 isDirty: true,
             };
-            console.log("UPDATE_HERO_IMAGE - New state:", newState);
             return newState;
         case "SET_LOADING":
             return { ...state, isLoading: action.payload };
@@ -97,10 +93,7 @@ export function ThemingProvider({ children, initialSettings }: ThemingProviderPr
     }, []);
 
     const updateHeroImage = useCallback((heroId: string | null, type: "url" | "upload" | "default") => {
-        console.log("updateHeroImage called with:", { heroId, type });
         dispatch({ type: "UPDATE_HERO_IMAGE", payload: { heroId, type } });
-        // Log state after dispatch (won't show updated state due to async nature)
-        console.log("updateHeroImage dispatch completed");
     }, []);
 
     const saveChanges = useCallback(async () => {

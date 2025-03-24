@@ -18,10 +18,8 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        console.log("Received POST request with body:", body);
 
         const validatedBody = podcastCreateRequestSchema.parse(body);
-        console.log("Validated body:", validatedBody);
 
         const podcast = await podcastService.create(validatedBody);
         return NextResponse.json(podcast);

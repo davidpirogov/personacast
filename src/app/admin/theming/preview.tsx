@@ -11,15 +11,11 @@ import { useThemingImage, ThemingImageProvider } from "./context/theming-image-c
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 function ThemingPreviewContent() {
-    const { isDirty, isLoading, error, saveChanges, updateHeroImage, updateSettings, settings } = useTheming();
+    const { isDirty, isLoading, error, saveChanges, updateHeroImage, updateSettings, settings } =
+        useTheming();
     const { type, uploadedImage, optimizedImages } = useThemingImage();
     const [isSaving, setIsSaving] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
-
-    // Log isDirty state when it changes
-    useEffect(() => {
-        console.log("ThemingPreviewContent - isDirty state:", isDirty);
-    }, [isDirty]);
 
     // When optimized images are available, update the hero image in the parent context
     useEffect(() => {
@@ -37,12 +33,6 @@ function ThemingPreviewContent() {
                 return;
             }
 
-            console.log("Optimized images available, updating hero:", {
-                fileId,
-                type,
-                imagesCount: optimizedImages.length,
-            });
-
             // Update the complete hero object in settings
             updateSettings({
                 hero: {
@@ -53,8 +43,6 @@ function ThemingPreviewContent() {
                         optimizedImages.find((img) => img.size === "placeholder")?.paths.webp || null,
                 },
             });
-
-            console.log("After updating hero settings with images");
         }
     }, [optimizedImages, type, updateSettings, settings]);
 

@@ -66,8 +66,6 @@ const initialImageUploadState: ImageUploadState = {
 
 // Reducer function
 function landingPageReducer(state: LandingPageState, action: LandingPageAction): LandingPageState {
-    console.log("landingPageReducer action:", action.type, "payload" in action ? action.payload : "");
-
     switch (action.type) {
         case "UPDATE_SETTINGS":
             return {
