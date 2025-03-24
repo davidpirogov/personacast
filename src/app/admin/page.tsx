@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { Loader } from "@/components/ui/loading";
 import GeneralPageSection from "@/components/sections/general-page-section";
 import Link from "next/link";
-import { Users, KeyRound, Layout, Settings, File } from "lucide-react";
+import { Users, KeyRound, Layout, Settings, File, ImageIcon } from "lucide-react";
 
 export const metadata: Metadata = {
     title: "Admin",
@@ -73,6 +73,12 @@ const AdminPreambleSection = async () => {
                         icon={<File className="w-6 h-6 text-red-600" />}
                         title="Files"
                         description="Manage files and their metadata"
+                    />
+                    <AdminPreambleLink
+                        href="/admin/hero-images"
+                        icon={<ImageIcon className="w-6 h-6 text-red-600" />}
+                        title="Hero Images"
+                        description="Manage hero images"
                     />
                 </div>
             </div>

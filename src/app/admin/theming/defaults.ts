@@ -1,9 +1,10 @@
 export interface SiteSettings {
     title: string;
     hero: {
-        type: "default" | "url" | "upload";
-        url?: string;
-        uploadedImage?: string | null;
+        id: number | null;
+        fileId: string | null;
+        images: { size: string; width: number; paths: { webp: string; jpeg: string } }[];
+        placeholder: string | null;
     };
     colors: {
         primary: {
@@ -26,9 +27,10 @@ export const SITE_SETTINGS_NAME = "system.site_settings";
 export const DEFAULT_SITE_SETTINGS: SiteSettings = {
     title: "Personacast",
     hero: {
-        type: "default", // Can be 'default', 'url', or 'upload'
-        url: "/images/default-hero.jpg", // Default hero image path
-        uploadedImage: null, // Will store uploaded image data if type is 'upload'
+        id: null,
+        fileId: null,
+        images: [],
+        placeholder: null,
     },
     colors: {
         primary: {

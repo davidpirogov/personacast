@@ -4,7 +4,9 @@ import { Metadata } from "next";
 import GeneralPageSection from "@/components/sections/general-page-section";
 import { variablesService } from "@/services/variables-service";
 import { DEFAULT_SITE_SETTINGS, SITE_SETTINGS_NAME } from "./defaults";
-import ThemingPreview from "./preview";
+import { LandingPageProvider } from "./context/landing-page-context";
+import { LandingPageContent } from "./landing-page-content";
+import { PageTitleWithSave } from "./components/page-title-with-save";
 
 export const metadata: Metadata = {
     title: "Landing | Admin",
@@ -26,12 +28,16 @@ const LandingPageAdminSection = async () => {
 
     const site_settings = JSON.parse(site_settings_variable.value);
 
-    console.log(site_settings);
-
     return (
-        <GeneralPageSection title="Landing Page Settings" description="Manage your landing page settings">
-            <ThemingPreview settings={site_settings} />
-        </GeneralPageSection>
+        <LandingPageProvider initialSettings={site_settings}>
+            <GeneralPageSection
+                title=""
+                description="Manage your landing page settings"
+                link={<PageTitleWithSave title="Landing Page Settings" />}
+            >
+                <LandingPageContent />
+            </GeneralPageSection>
+        </LandingPageProvider>
     );
 };
 

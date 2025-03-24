@@ -3,6 +3,7 @@
 import { createContext, useContext, useCallback, useReducer, ReactNode } from "react";
 import { ThemingImageContextType, ThemingImageState } from "../types";
 import { formatBytes } from "@/lib/utils";
+import { set } from "zod";
 
 const ThemingImageContext = createContext<ThemingImageContextType | null>(null);
 
@@ -87,7 +88,8 @@ export function ThemingImageProvider({ children }: ThemingImageProviderProps) {
             const formData = new FormData();
             formData.append("file", file);
 
-            const response = await fetch("/api/upload/hero", {
+            // File upload endpoint call
+            const response = await fetch("/api/files/upload", {
                 method: "POST",
                 body: formData,
             });
@@ -97,7 +99,29 @@ export function ThemingImageProvider({ children }: ThemingImageProviderProps) {
             }
 
             const data = await response.json();
-            dispatch({ type: "SET_OPTIMIZED_IMAGES", payload: data.images });
+            if (!data.success) {
+                throw new Error(data);
+            }
+
+            const setHeroImageResponse = await fetch(`/api/files/hero`, {
+                method: "POST",
+                body: JSON.stringify({
+                    fileId: data.file.id,
+                    name: "Landing page hero image",
+                    description: "This image is used as the hero image for the landing page",
+                    urlTo: "/",
+                    podcastId: null,
+                    episodeId: null,
+                }),
+            });
+
+            if (!setHeroImageResponse.ok) {
+                throw new Error("Failed to set hero image");
+            }
+
+            const setHeroImageData = await setHeroImageResponse.json();
+
+            dispatch({ type: "SET_OPTIMIZED_IMAGES", payload: setHeroImageData.images });
         } catch (err) {
             dispatch({
                 type: "SET_ERROR",

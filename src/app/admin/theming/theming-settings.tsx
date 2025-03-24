@@ -1,22 +1,37 @@
-import { SiteSettings } from "./defaults";
+"use client";
 
-const ThemingPreviewSettingsPanel = ({ settings }: { settings: SiteSettings }) => {
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useTheming } from "./context/theming-context";
+
+const ThemingPreviewSettingsPanel = () => {
+    const { settings, updateSettings } = useTheming();
+    const [title, setTitle] = useState(settings.title);
+
+    // Handle title change
+    const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newTitle = e.target.value;
+        setTitle(newTitle);
+        updateSettings({ title: newTitle });
+    };
+
     return (
         <div className="p-6 rounded-lg border bg-white shadow-sm">
             <h2 className="text-xl font-semibold mb-4">Configuration</h2>
             <div className="space-y-4">
                 <div>
-                    <label className="block text-sm font-medium text-gray-600">Site Title</label>
-                    <div className="mt-1 text-gray-900">{settings.title}</div>
+                    <Label htmlFor="site-title">Site Title</Label>
+                    <Input id="site-title" value={title} onChange={handleTitleChange} className="mt-1" />
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-600">Hero Type</label>
+                    <Label className="block text-sm font-medium text-gray-600">Hero Type</Label>
                     <div className="mt-1 text-gray-900">{settings.hero.type}</div>
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-600">Colors</label>
+                    <Label className="block text-sm font-medium text-gray-600">Colors</Label>
                     <div className="mt-2 space-y-2">
                         <div className="flex items-center gap-2">
                             <div

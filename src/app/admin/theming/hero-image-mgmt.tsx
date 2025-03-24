@@ -8,11 +8,12 @@ import { ThemingPreviewImagePanel } from "./components/theming-preview-image-pan
 import { ThemingImageDropdownButton } from "./components/theming-image-dropdown-button";
 import { ThemingLoadImageFromUrlPanel } from "./components/theming-load-image-from-url-panel";
 import { useThemingImage } from "./context/theming-image-context";
-import { SiteSettings } from "./defaults";
+import { useTheming } from "./context/theming-context";
 
-function HeroImageManagement({ settings }: { settings: SiteSettings }) {
+function HeroImageManagement() {
     const [isUrlDialogOpen, setIsUrlDialogOpen] = useState(false);
     const { error } = useThemingImage();
+    const { settings } = useTheming();
 
     return (
         <div className="space-y-4">
@@ -23,7 +24,7 @@ function HeroImageManagement({ settings }: { settings: SiteSettings }) {
                 </Alert>
             )}
 
-            <ThemingPreviewImagePanel settings={settings} />
+            <ThemingPreviewImagePanel />
 
             <ThemingImageDropdownButton onUrlClick={() => setIsUrlDialogOpen(true)} />
 
@@ -40,10 +41,6 @@ function HeroImageManagement({ settings }: { settings: SiteSettings }) {
     );
 }
 
-export default function HeroImageManagementWithProvider({ settings }: { settings: SiteSettings }) {
-    return (
-        <ThemingImageProvider>
-            <HeroImageManagement settings={settings} />
-        </ThemingImageProvider>
-    );
+export default function HeroImageManagementWithProvider() {
+    return <HeroImageManagement />;
 }
