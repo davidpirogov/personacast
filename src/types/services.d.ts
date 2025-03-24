@@ -111,4 +111,14 @@ export interface FileMetadataService extends CRUDService<FileMetadata> {
      * Get thumbnails for a file, which are returned as an array of paths
      */
     getThumbnails(id: string): Promise<string[]>;
+
+}
+
+export interface HeroImageService extends CRUDService<HeroImage> {
+    /**
+     * Get a hero image by ID
+     */
+    getByFileId(fileId: string): Promise<HeroImage | null>;
+    getByPodcastId(podcastId: number): Promise<HeroImage | null>;
+    getByEpisodeId(episodeId: number): Promise<HeroImage | null>;
 }

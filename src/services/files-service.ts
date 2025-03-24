@@ -8,6 +8,7 @@ import { mkdir, unlink, writeFile, readdir, readFile, access, rmdir } from "fs/p
 import { join, resolve } from "path";
 import sharp from "sharp";
 import { v4 as uuidv4 } from "uuid";
+import { heroImagesService } from "@/services/hero-images-service";
 
 export class FileUploadError extends Error {
     constructor(message: string) {
@@ -15,6 +16,8 @@ export class FileUploadError extends Error {
         this.name = "FileUploadError";
     }
 }
+
+export const FILES_DIR = "files";
 
 export class DefaultFileMetadataService implements FileMetadataService {
     private adapter: FilesAdapterType;
@@ -208,6 +211,7 @@ export class DefaultFileMetadataService implements FileMetadataService {
             path: relativePath,
             size: file.size,
             mimeType,
+            extension: fileExt,
             width,
             height,
             duration,
@@ -224,8 +228,7 @@ export class DefaultFileMetadataService implements FileMetadataService {
     ): Promise<{ originalFilePath: string; resizedPath: string; exists: boolean }> {
         const originalFilePath = join(this.appDataDir, fileMetadata.path);
         const dirPrefix = fileMetadata.id.substring(0, 2);
-        const ext = "." + fileMetadata.name.split(".").pop()?.toLowerCase();
-        const resizedFileName = `${fileMetadata.id}-${width}x${height}${ext}`;
+        const resizedFileName = `${fileMetadata.id}-${width}x${height}${fileMetadata.extension}`;
         const resizedDir = join(this.appDataDir, "files", dirPrefix);
         const resizedPath = join(resizedDir, resizedFileName);
 

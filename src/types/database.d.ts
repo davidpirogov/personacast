@@ -74,6 +74,20 @@ export interface FileMetadata extends BaseRecord {
     height: number | null;
     duration: number | null;
     url: string;
+    extension: string;
+}
+
+export interface HeroImage extends BaseRecord {
+    id: number;
+    name: string;
+    description: string;
+    fileId: string;
+    podcastId?: number | null;
+    episodeId?: number | null;
+    urlTo?: string | null;
+    file: FileMetadata;
+    podcast?: Podcast;
+    episode?: Episode;
 }
 
 // Generic database adapter interface
@@ -111,6 +125,14 @@ export interface IdDatabaseAdapter<T extends BaseRecord> extends DatabaseAdapter
     delete(id: number, tx?: Prisma.TransactionClient): Promise<void>;
 }
 
+// Hero Image specific adapter
+export interface HeroImageAdapter extends IdDatabaseAdapter<HeroImage> {
+    create(
+        data: Pick<HeroImage, "name" | "description" | "fileId" | "podcastId" | "episodeId" | "urlTo">,
+        tx?: Prisma.TransactionClient,
+    ): Promise<HeroImage>;
+}
+
 export interface IdNameDatabaseAdapter<T extends BaseRecord> extends IdDatabaseAdapter<T> {
     getByName(name: string, tx?: Prisma.TransactionClient): Promise<T | null>;
 }
@@ -123,3 +145,4 @@ export type EpisodesAdapterType = IdDatabaseAdapter<Episode>;
 export type ApiClientsAdapterType = IdDatabaseAdapter<ApiClient>;
 export type VariablesAdapterType = IdNameDatabaseAdapter<Variable>;
 export type FilesAdapterType = UuidDatabaseAdapter<FileMetadata>;
+export type HeroImagesAdapterType = HeroImageAdapter;
