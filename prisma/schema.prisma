@@ -51,15 +51,34 @@ model Account {
 }
 
 model Podcast {
-  id          Int      @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   title       String
   description String
-  published   Boolean  @default(false)
+  published   Boolean   @default(false)
   publishedAt DateTime? @map("published_at")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  episodes  Episode[]
+  heroImage HeroImage?
 
   @@map("podcasts")
+}
+
+model Episode {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String
+  podcastId   Int       @map("podcast_id")
+  published   Boolean   @default(false)
+  publishedAt DateTime? @map("published_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  podcast   Podcast    @relation(fields: [podcastId], references: [id], onDelete: Cascade)
+  heroImage HeroImage?
+
+  @@map("episodes")
 }
 
 model ApiClient {
@@ -85,7 +104,7 @@ model Variable {
 }
 
 model FileMetadata {
-  id        String   @id @default(uuid()) @db.Uuid
+  id        String     @id @default(uuid()) @db.Uuid
   name      String
   path      String
   size      Int
@@ -94,8 +113,33 @@ model FileMetadata {
   height    Int?
   duration  Int?
   url       String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  extension String     @db.VarChar(48)
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+
+  heroImage HeroImage?
 
   @@map("files")
+}
+
+model HeroImage {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String   @db.Text
+  fileId      String   @unique @map("file_id") @db.Uuid
+  podcastId   Int?     @unique @map("podcast_id")
+  episodeId   Int?     @unique @map("episode_id")
+  urlTo       String?  @map("url_to")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  file     FileMetadata @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  podcast  Podcast?     @relation(fields: [podcastId], references: [id], onDelete: Cascade)
+  episode  Episode?     @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+
+  @@index([fileId])
+  @@index([podcastId])
+  @@index([episodeId])
+
+  @@map("hero_images")
 }

@@ -23,28 +23,6 @@ createdAt   DateTime @default(now()) @map("created_at")
 updatedAt   DateTime @updatedAt @map("updated_at")
 ```
 
-## Database Trigger for updated_at
-
-When creating new tables, include this trigger in your migration to ensure `updated_at` is always set, even when bypassing Prisma:
-
-```sql
--- Function to automatically set updated_at timestamp
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = CURRENT_TIMESTAMP;
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
-
--- Add trigger to your_table_name table
-DROP TRIGGER IF EXISTS set_updated_at ON your_table_name;
-CREATE TRIGGER set_updated_at
-    BEFORE UPDATE ON your_table_name
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
-```
-
 ## Column Naming
 
 - Use camelCase for Prisma field names
