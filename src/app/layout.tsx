@@ -1,34 +1,24 @@
+import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { NavBar } from "@/components/ui/nav-bar/nav-bar";
-import { SessionProvider } from "@/components/providers/session-provider";
-import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
-import { Metadata } from "next";
-import { auth } from "@/auth";
-import { ThemeProvider } from "@/components/providers/theme-provider";
+import { Providers } from "@/app/providers";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
     title: {
-        default: "Personacast",
         template: "%s | Personacast",
+        default: "Personacast",
     },
-    description: "Podcasts with AI persona twist",
+    description: "Podcasts with AI persona twists",
 };
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-    const session = await auth();
-
+export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
         <html lang="en">
-            <ThemeProvider className={inter.className}>
-                <SessionProvider session={session}>
-                    <NavBar />
-                    {children}
-                    <Toaster />
-                </SessionProvider>
-            </ThemeProvider>
+            <body className={inter.className} data-theme="workzone">
+                <Providers>{children}</Providers>
+            </body>
         </html>
     );
 }

@@ -1,27 +1,87 @@
-"use client";
-
-import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
-import { useEffect } from "react";
+import { Suspense } from "react";
+import { Metadata } from "next";
 import { Loader } from "@/components/ui/loading";
 import { HeroSection } from "@/components/sections/hero-section";
+import { variablesService } from "@/services/variables-service";
+import { DEFAULT_SITE_SETTINGS, SITE_SETTINGS_NAME, SiteSettings } from "@/app/admin/theming/defaults";
+import { SessionCheck } from "@/components/auth/session-check";
+import { generateMetadata as genMeta } from "./head";
+import { HeroImagesPreloader } from "./preloaders";
+import { HeadResourceHints } from "./head-resource-hints";
 
-export default function LandingPage() {
-    const { data: session, status } = useSession();
+// Revalidate every 24 hours (in seconds)
+export const revalidate = 86400;
 
-    useEffect(() => {
-        if (session) {
-            // redirect("/dashboard");
-        }
-    }, [session]);
+// Cache the settings in memory for faster subsequent renders
+let cachedSettings: SiteSettings | null = null;
+let cacheTimestamp: number = 0;
+const CACHE_DURATION = 3600000; // 1 hour in milliseconds
 
-    if (status === "loading") {
-        return <Loader />;
+async function getSiteSettings(): Promise<SiteSettings> {
+    const now = Date.now();
+    // Return cached settings if they exist and are fresh
+    if (cachedSettings && now - cacheTimestamp < CACHE_DURATION) {
+        return cachedSettings;
     }
+    try {
+        const site_settings_variable = await variablesService.getByName(SITE_SETTINGS_NAME);
+
+        if (!site_settings_variable) {
+            console.warn("Site settings not found, using defaults");
+            cachedSettings = DEFAULT_SITE_SETTINGS;
+            cacheTimestamp = now;
+            return DEFAULT_SITE_SETTINGS;
+        }
+
+        const settings = JSON.parse(site_settings_variable.value);
+        cachedSettings = settings;
+        cacheTimestamp = now;
+        return settings;
+    } catch (error) {
+        console.error("Error loading site settings:", error);
+        cachedSettings = DEFAULT_SITE_SETTINGS;
+        cacheTimestamp = now;
+        return DEFAULT_SITE_SETTINGS;
+    }
+}
+
+// Generate metadata for the page
+export async function generateMetadata(): Promise<Metadata> {
+    const settings = await getSiteSettings();
+    return genMeta(settings);
+}
+
+export default async function LandingPage() {
+    // Fetch site settings at build/revalidation time - cached by ISR
+    const siteSettings = await getSiteSettings();
 
     return (
-        <main className="min-h-screen bg-background">
-            <HeroSection />
-        </main>
+        <>
+            {/* Add resource hints to improve loading performance */}
+            <HeadResourceHints settings={siteSettings} />
+            {/* Preload hero images using the Next.js Image API */}
+            <Suspense>
+                <HeroImagesPreloader
+                    preloadLinks={siteSettings.hero.images.map((img) => ({
+                        rel: "preload",
+                        as: "image",
+                        href: img.paths.webp,
+                        type: "image/webp",
+                        imageSizes: "100vw",
+                        fetchPriority: img.size === "lg" ? "high" : "auto",
+                    }))}
+                />
+            </Suspense>
+
+            <main className="min-h-screen bg-background">
+                {/* Client component for session check */}
+                <Suspense fallback={<Loader />}>
+                    <SessionCheck />
+                </Suspense>
+
+                {/* Server component with preloaded settings */}
+                <HeroSection settings={siteSettings} />
+            </main>
+        </>
     );
 }

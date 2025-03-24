@@ -24,12 +24,6 @@ const ThemingPreviewSettingsPanel = () => {
                     <Label htmlFor="site-title">Site Title</Label>
                     <Input id="site-title" value={title} onChange={handleTitleChange} className="mt-1" />
                 </div>
-
-                <div>
-                    <Label className="block text-sm font-medium text-gray-600">Hero Type</Label>
-                    <div className="mt-1 text-gray-900">{settings.hero.type}</div>
-                </div>
-
                 <div>
                     <Label className="block text-sm font-medium text-gray-600">Colors</Label>
                     <div className="mt-2 space-y-2">

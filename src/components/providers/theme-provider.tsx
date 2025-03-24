@@ -15,11 +15,11 @@ export function ThemeProvider({ className, children }: ThemeProviderProps) {
     const isLandingThemePath = ["", "/", "/podcasts"].includes(pathname);
 
     return (
-        <body 
-            data-theme={isLandingThemePath ? "landing" : "workzone"} 
+        <div
+            data-theme={isLandingThemePath ? "landing" : "workzone"}
             className={`${className} transition-colors duration-300 ease-in-out`}
         >
             {children}
-        </body>
+        </div>
     );
 }
