@@ -1,5 +1,6 @@
 import Script from "next/script";
 import { SiteSettings } from "@/app/admin/theming/defaults";
+import { selectBestHeroImage } from "@/lib/shared-image-utils";
 
 interface HeadResourceHintsProps {
     settings: SiteSettings;
@@ -25,10 +26,8 @@ export function HeadResourceHints({ settings }: HeadResourceHintsProps) {
         ),
     ].filter(Boolean);
 
-    // Get the main image using server-safe approach by prioritizing specific sizes
-    const mainImage =
-        settings.hero.images.find((img) => img.size === "2xl" || img.size === "xl")?.paths.webp ||
-        settings.hero.images[0]?.paths.webp;
+    // Use the shared utility to select the best image
+    const mainImage = selectBestHeroImage(settings.hero.images);
     const placeholderImage = settings.hero.placeholder;
 
     // Generate inline script to preload images efficiently
@@ -51,12 +50,6 @@ export function HeadResourceHints({ settings }: HeadResourceHintsProps) {
         
         // Then load main image
         ${mainImage ? `preloadImage("${mainImage}");` : ""}
-        
-        // Then preload the rest in background
-        ${settings.hero.images
-            .filter((img) => img.paths.webp !== mainImage && img.paths.webp !== placeholderImage)
-            .map((img) => `setTimeout(() => preloadImage("${img.paths.webp}"), 100);`)
-            .join("\n")}
       });
     })();
   `;

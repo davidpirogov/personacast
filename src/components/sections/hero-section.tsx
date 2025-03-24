@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { SiteSettings } from "@/app/admin/theming/defaults";
-import { findBestQualityImage } from "@/lib/image-utils";
+import { selectBestHeroImage } from "@/lib/shared-image-utils";
 
 interface HeroSectionProps {
     className?: string;
@@ -23,43 +23,40 @@ interface ImageDebugInfo {
 }
 
 export function HeroSection({ className, settings }: HeroSectionProps) {
+    // Add image ref to access image properties
+    const imageRef = useRef<HTMLImageElement>(null);
     const [scrollY, setScrollY] = useState(0);
     const [imageLoaded, setImageLoaded] = useState(false);
-    const [isImagesPreloaded, setIsImagesPreloaded] = useState(false);
+
     // Debug state
     const [debugInfo, setDebugInfo] = useState<ImageDebugInfo | null>(null);
     const [showDebug, setShowDebug] = useState(false);
+    const [showDebugControls, setShowDebugControls] = useState(false);
 
-    // Preload images before rendering to avoid pop-in effect
+    // Get viewport info for client-side image selection
+    const [viewportInfo, setViewportInfo] = useState<{ width: number; dpr: number } | null>(null);
+
+    // Set up viewport info on mount and check for debug controls
     useEffect(() => {
-        if (!settings?.hero.images || settings.hero.images.length === 0) {
-            setIsImagesPreloaded(true);
-            return;
-        }
+        setViewportInfo({
+            width: window.innerWidth,
+            dpr: window.devicePixelRatio || 1,
+        });
 
-        // Find best quality image at component mount time
-        const bestImage = findBestQualityImage(settings.hero.images, null, "2xl");
+        // Check for debug controls - only on client side
+        setShowDebugControls(process.env.NEXT_PUBLIC_APP_SHOW_DEBUG_CONTROLS === "true");
 
-        if (!bestImage) {
-            setIsImagesPreloaded(true);
-            return;
-        }
-
-        // Debug log what image should be used
-        console.log("Preloading best image:", bestImage);
-        console.log("Available images:", settings.hero.images);
-
-        // Preload the image
-        const img = new window.Image(1, 1);
-        img.onload = () => {
-            setIsImagesPreloaded(true);
+        // Update on resize for responsive behavior
+        const handleResize = () => {
+            setViewportInfo({
+                width: window.innerWidth,
+                dpr: window.devicePixelRatio || 1,
+            });
         };
-        img.onerror = () => {
-            // Even if it errors, we should still show something
-            setIsImagesPreloaded(true);
-        };
-        img.src = bestImage;
-    }, [settings?.hero.images]);
+
+        window.addEventListener("resize", handleResize, { passive: true });
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
 
     // Handle scroll for parallax effect
     useEffect(() => {
@@ -71,27 +68,30 @@ export function HeroSection({ className, settings }: HeroSectionProps) {
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
-    // Generate srcSet for optimized images
+    // Use our shared utility with viewport info
+    const hasHeroImage = settings?.hero.images && settings.hero.images.length > 0;
+    const mainImageSrc = hasHeroImage ? selectBestHeroImage(settings.hero.images, viewportInfo) : null;
+    const hasPlaceholder = settings?.hero.placeholder ? true : false;
+
+    // Generate srcSet for optimized images - use only if we have multiple appropriate sizes
     const generateSrcSet = (format: "webp" | "jpeg") => {
         if (!settings?.hero.images || settings.hero.images.length === 0) return "";
         const srcSet = settings.hero.images.map((img) => `${img.paths[format]} ${img.width}w`).join(", ");
-        console.log(`Generated ${format} srcSet:`, srcSet);
         return srcSet;
     };
 
-    const hasHeroImage = settings?.hero.images && settings.hero.images.length > 0;
-    // Use findBestQualityImage to get the highest quality image
-    const mainImageSrc = hasHeroImage ? findBestQualityImage(settings.hero.images, null, "2xl") : null;
-    const hasPlaceholder = settings?.hero.placeholder ? true : false;
-
-    // Handle image load complete
+    // Handle image load with dimensions
     const handleImageLoad = () => {
         setImageLoaded(true);
-    };
 
-    // Handle image loading complete with dimensions
-    const handleLoadingComplete = (img: { naturalWidth: number; naturalHeight: number }) => {
-        setImageLoaded(true);
+        // Access the image element via ref or querySelector
+        const imgElement =
+            imageRef.current || (document.querySelector(".hero-background-image") as HTMLImageElement);
+        if (!imgElement) return;
+
+        // Get image dimensions
+        const naturalWidth = imgElement.naturalWidth;
+        const naturalHeight = imgElement.naturalHeight;
 
         // Get the currently selected image size based on the dimensions
         let selectedSize = "unknown";
@@ -100,14 +100,14 @@ export function HeroSection({ className, settings }: HeroSectionProps) {
 
         if (settings?.hero.images) {
             // First try to find exact match
-            const exactMatch = settings.hero.images.find((image) => image.width === img.naturalWidth);
+            const exactMatch = settings.hero.images.find((image) => image.width === naturalWidth);
 
             if (exactMatch) {
                 selectedSize = exactMatch.size;
             } else {
                 // If no exact match, find the closest match by width
                 settings.hero.images.forEach((image) => {
-                    const diff = Math.abs(image.width - img.naturalWidth);
+                    const diff = Math.abs(image.width - naturalWidth);
                     if (diff < closestDiff) {
                         closestDiff = diff;
                         closestMatch = image;
@@ -121,36 +121,19 @@ export function HeroSection({ className, settings }: HeroSectionProps) {
             }
         }
 
-        // Use document.querySelector to find the actual image element
-        // This is a workaround since Next.js Image doesn't directly expose the img element
-        setTimeout(() => {
-            const imgElement = document.querySelector(".hero-background-image") as HTMLImageElement;
-            if (imgElement) {
-                // Get viewport dimensions for context
-                const viewportWidth = window.innerWidth;
-                const viewportHeight = window.innerHeight;
+        // Get viewport dimensions for context
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
 
-                setDebugInfo({
-                    src: imgElement.src,
-                    naturalWidth: img.naturalWidth,
-                    naturalHeight: img.naturalHeight,
-                    currentSrc: imgElement.currentSrc || "unknown",
-                    size: selectedSize,
-                    viewport: `${viewportWidth}x${viewportHeight}`,
-                    dpr: window.devicePixelRatio,
-                });
-
-                console.log("Image loaded with:", {
-                    src: imgElement.src,
-                    naturalWidth: img.naturalWidth,
-                    naturalHeight: img.naturalHeight,
-                    currentSrc: imgElement.currentSrc || "unknown",
-                    size: selectedSize,
-                    viewport: `${viewportWidth}x${viewportHeight}`,
-                    dpr: window.devicePixelRatio,
-                });
-            }
-        }, 0);
+        setDebugInfo({
+            src: imgElement.src,
+            naturalWidth,
+            naturalHeight,
+            currentSrc: imgElement.currentSrc || "unknown",
+            size: selectedSize,
+            viewport: `${viewportWidth}x${viewportHeight}`,
+            dpr: window.devicePixelRatio,
+        });
     };
 
     // Toggle debug info display
@@ -167,7 +150,7 @@ export function HeroSection({ className, settings }: HeroSectionProps) {
             )}
         >
             {/* Hero Image with Parallax */}
-            {mainImageSrc && isImagesPreloaded && (
+            {mainImageSrc && (
                 <motion.div
                     className="absolute inset-0 z-0"
                     initial={{ opacity: 0, scale: 1.05 }}
@@ -177,6 +160,7 @@ export function HeroSection({ className, settings }: HeroSectionProps) {
                 >
                     {/* Optimized image with blur placeholder */}
                     <Image
+                        ref={imageRef}
                         src={mainImageSrc}
                         alt="Hero background"
                         fill
@@ -192,10 +176,6 @@ export function HeroSection({ className, settings }: HeroSectionProps) {
                         placeholder={hasPlaceholder ? "blur" : "empty"}
                         blurDataURL={settings?.hero.placeholder || undefined}
                         onLoad={handleImageLoad}
-                        onLoadingComplete={handleLoadingComplete}
-                        {...{
-                            srcSet: generateSrcSet("webp"),
-                        }}
                     />
                     <div
                         className={cn(
@@ -208,8 +188,8 @@ export function HeroSection({ className, settings }: HeroSectionProps) {
                 </motion.div>
             )}
 
-            {/* Debug Overlay Button */}
-            {process.env.APP_SHOW_DEBUG_CONTROLS === "true" && (
+            {/* Debug Overlay Button - only rendered client-side */}
+            {showDebugControls && (
                 <button
                     onClick={toggleDebug}
                     className="absolute top-4 right-4 z-50 bg-black/70 text-white px-3 py-1 rounded text-sm"

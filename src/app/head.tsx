@@ -1,4 +1,5 @@
 import { SiteSettings } from "@/app/admin/theming/defaults";
+import { selectBestHeroImage } from "@/lib/shared-image-utils";
 
 // Generate metadata based on site settings
 export function generateMetadata(settings: SiteSettings) {
@@ -33,17 +34,22 @@ export function generatePreloadLinks(settings: SiteSettings): PreloadLink[] {
         return [];
     }
 
-    // Find the most appropriate sizes for preloading
-    const imagesToPreload = settings.hero.images
-        .filter((img) => ["md", "lg"].includes(img.size))
-        .map((img) => ({
+    // Use the shared utility to select the best image
+    const mainImageSrc = selectBestHeroImage(settings.hero.images);
+
+    // Only preload the exact image that will be used
+    const imagesToPreload = [];
+
+    if (mainImageSrc) {
+        imagesToPreload.push({
             rel: "preload",
             as: "image",
-            href: img.paths.webp,
+            href: mainImageSrc,
             type: "image/webp",
             imageSizes: "100vw",
-            fetchPriority: (img.size === "lg" ? "high" : "auto") as "high" | "auto" | "low",
-        }));
+            fetchPriority: "high" as "high" | "auto" | "low",
+        });
+    }
 
     // Always preload the placeholder for instant display
     if (settings.hero.placeholder) {
