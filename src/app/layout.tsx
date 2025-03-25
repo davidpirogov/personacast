@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/app/providers";
 import { ThemeScript } from "@/components/providers/theme-script";
+import { Footer } from "@/components/ui/footer/footer";
 import { variablesService } from "@/services/variables-service";
 import { SITE_SETTINGS_NAME, DEFAULT_SITE_SETTINGS } from "@/app/admin/theming/defaults";
 import { HeroImageProvider } from "@/providers/hero-images-provider";
@@ -88,7 +89,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <body className={inter.className}>
                 <ThemeScript />
                 <Providers>
-                    <HeroImageProvider siteSettings={siteSettings}>{children}</HeroImageProvider>
+                    <HeroImageProvider siteSettings={siteSettings}>
+                        {children}
+                        <Footer />
+                    </HeroImageProvider>
                 </Providers>
             </body>
         </html>

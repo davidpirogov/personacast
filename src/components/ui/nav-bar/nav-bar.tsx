@@ -10,8 +10,8 @@ import { cn } from "@/lib/utils";
 import { signIn, signOut } from "next-auth/react";
 import { usePermissions } from "@/lib/hooks/usePermissions";
 import { useSessionState } from "@/lib/hooks/use-session-state";
+import { useMenu } from "@/components/providers/menu/menu-provider";
 import Image from "next/image";
-import { navItems, adminNavItems } from "./menu-items";
 import { useSiteSettings } from "@/app/providers";
 
 function Avatar({ src, alt }: { src?: string | null; alt: string }) {
@@ -31,8 +31,8 @@ function Avatar({ src, alt }: { src?: string | null; alt: string }) {
 export function NavBar() {
     const pathname = usePathname();
     const isAdminSection = pathname?.startsWith("/admin");
-    const isStudioSection = pathname?.startsWith("/studio");
     const { session, isLoading } = useSessionState();
+    const { menuItems, isLoading: isMenuLoading } = useMenu();
     const { canAccessAdmin } = usePermissions();
     const siteSettings = useSiteSettings();
 
@@ -43,11 +43,8 @@ export function NavBar() {
         return pathname?.startsWith(href);
     };
 
-    // Admin menu is disabled for now
-    const isAdminMenuEnabled = false;
-
     // Show loading state
-    if (isLoading) {
+    if (isLoading || isMenuLoading) {
         return (
             <nav className="fixed top-0 z-50 w-full bg-background/5 backdrop-blur-lg border-b border-white/10">
                 <div className="container mx-auto px-4">
@@ -63,28 +60,17 @@ export function NavBar() {
         );
     }
 
-    const renderableMenuItems = navItems
-        .map((item) => {
-            // If the item has no roles, it is visible to all users
-            if (item.roles && item.roles.length === 0) {
-                return item;
-            }
-            // If the user is not authenticated, the item is not visible
-            if (!session) {
-                return null;
-            }
+    // Get top-level menu items
+    const topLevelItems = menuItems.filter((item) => !item.parentId);
 
-            // If the item has roles, it is only visible to users with the required roles
-            if (item.roles && item.roles.length > 0 && item.roles.includes(session?.user.role)) {
-                return item;
-            }
-
-            return null;
-        })
-        .filter((item) => item !== null);
+    // Get admin submenu items if we're in the admin section
+    const adminParentItem = topLevelItems.find((item) => item.href === "/admin");
+    const adminSubItems = adminParentItem
+        ? menuItems.filter((item) => item.parentId === adminParentItem.id)
+        : [];
 
     return (
-        <nav className="fixed top-0 z-50 w-full bg-white backdrop-blur-lg border-b border-gray-200 supports-[backdrop-filter]:bg-white/95 transition-all duration-300 ease-in-out">
+        <nav className="fixed top-0 z-50 w-full bg-white backdrop-blur-lg border-b border-gray-200 supports-[backdrop-filter]:bg-white/95 data-[theme=landing]:bg-background/5 data-[theme=landing]:backdrop-blur-lg data-[theme=landing]:border-b data-[theme=landing]:border-white/10 transition-all duration-300 ease-in-out">
             <div className="container mx-auto px-4">
                 {/* Desktop Navigation */}
                 <div className="hidden md:block">
@@ -95,34 +81,21 @@ export function NavBar() {
                             </Link>
                             <NavigationMenu>
                                 <NavigationMenuList className="gap-6">
-                                    {renderableMenuItems.map((props) => (
-                                        <NavigationMenuItem key={props.href}>
+                                    {topLevelItems.map((item) => (
+                                        <NavigationMenuItem key={item.id}>
                                             <Link
-                                                {...props}
+                                                href={item.href}
                                                 className={cn(
-                                                    "landing:text-foreground/80 workzone:text-foreground/80 transition-colors px-3 py-2 rounded-md",
-                                                    isActive(props.href)
-                                                        ? "landing:bg-primary landing:text-primary-foreground workzone:bg-primary workzone:text-primary-foreground"
-                                                        : "landing:hover:bg-primary/10 landing:hover:text-primary-foreground workzone:hover:bg-primary/10 workzone:hover:text-primary-foreground",
-                                                )}
-                                            />
-                                        </NavigationMenuItem>
-                                    ))}
-                                    {isAdminMenuEnabled && session && canAccessAdmin && (
-                                        <NavigationMenuItem>
-                                            <Link
-                                                href="/admin"
-                                                className={cn(
-                                                    "text-foreground/80 transition-colors px-3 py-2 rounded-md",
-                                                    isActive("/admin")
-                                                        ? "bg-accent/10 text-accent-foreground"
-                                                        : "hover:bg-accent/20 hover:text-accent-foreground",
+                                                    "data-[theme=landing]:text-foreground/80 data-[theme=workzone]:text-foreground/80 transition-colors px-3 py-2 rounded-md",
+                                                    isActive(item.href)
+                                                        ? "data-[theme=landing]:bg-primary data-[theme=landing]:text-primary-foreground data-[theme=workzone]:bg-primary data-[theme=workzone]:text-primary-foreground"
+                                                        : "data-[theme=landing]:hover:bg-primary/10 data-[theme=landing]:hover:text-primary-foreground data-[theme=workzone]:hover:bg-primary/10 data-[theme=workzone]:hover:text-primary-foreground",
                                                 )}
                                             >
-                                                Admin
+                                                {item.label}
                                             </Link>
                                         </NavigationMenuItem>
-                                    )}
+                                    ))}
                                 </NavigationMenuList>
                             </NavigationMenu>
                         </div>
@@ -147,34 +120,27 @@ export function NavBar() {
                                         Sign out
                                     </button>
                                 </div>
-                            ) : (
-                                <button
-                                    onClick={() => signIn()}
-                                    className="px-3 py-1.5 bg-accent/10 border border-accent/20 rounded-md text-accent-foreground hover:bg-accent/20 font-medium transition-colors"
-                                >
-                                    Sign in
-                                </button>
-                            )}
+                            ) : null}
                         </div>
                     </div>
 
                     {/* Admin Submenu - Desktop */}
-                    {isAdminSection && (
+                    {isAdminSection && adminSubItems.length > 0 && (
                         <div className="border-t border-border/10">
                             <NavigationMenu>
                                 <NavigationMenuList className="gap-6 h-12">
-                                    {adminNavItems.map((props) => (
-                                        <NavigationMenuItem key={props.href}>
+                                    {adminSubItems.map((item) => (
+                                        <NavigationMenuItem key={item.id}>
                                             <Link
-                                                href={props.href}
+                                                href={item.href}
                                                 className={cn(
-                                                    "landing:text-foreground/80 workzone:text-foreground/80 transition-colors px-3 py-2 rounded-md",
-                                                    isActive(props.href, props.exact)
-                                                        ? "landing:bg-accent/10 landing:text-accent-foreground workzone:bg-accent/10 workzone:text-accent-foreground"
-                                                        : "landing:hover:bg-accent/20 landing:hover:text-accent-foreground workzone:hover:bg-accent/20 workzone:hover:text-accent-foreground",
+                                                    "data-[theme=landing]:text-foreground/80 data-[theme=workzone]:text-foreground/80 transition-colors px-3 py-2 rounded-md",
+                                                    isActive(item.href, true)
+                                                        ? "data-[theme=landing]:bg-accent/10 data-[theme=landing]:text-accent-foreground data-[theme=workzone]:bg-accent/10 data-[theme=workzone]:text-accent-foreground"
+                                                        : "data-[theme=landing]:hover:bg-accent/20 data-[theme=landing]:hover:text-accent-foreground data-[theme=workzone]:hover:bg-accent/20 data-[theme=workzone]:hover:text-accent-foreground",
                                                 )}
                                             >
-                                                {props.children}
+                                                {item.label}
                                             </Link>
                                         </NavigationMenuItem>
                                     ))}
@@ -194,73 +160,55 @@ export function NavBar() {
                                     <span className="sr-only">Toggle Menu</span>
                                 </Button>
                             </SheetTrigger>
-                            <SheetContent side="left" className="w-[300px] sm:w-[400px]">
-                                <SheetTitle>{siteSettings.title} Menu</SheetTitle>
+                            <SheetContent side="left" className="w-[280px] sm:w-[350px] p-0">
+                                <SheetTitle className="px-4 pt-4 pb-2">{siteSettings.title} Menu</SheetTitle>
                                 <NavigationMenu
                                     orientation="vertical"
                                     className="w-full [&_[role=menuitem]]:w-full"
                                 >
                                     <NavigationMenuList className="flex-col items-stretch gap-0 w-full [&>li]:w-full">
                                         {/* Main Menu Items */}
-                                        {navItems.map((props, index) => (
+                                        {topLevelItems.map((item, index) => (
                                             <NavigationMenuItem
-                                                key={props.href}
+                                                key={item.id}
                                                 className={cn(
                                                     "w-full flex !inline-flex [&>a]:w-full",
                                                     index !== 0 ? "border-t" : "",
                                                 )}
                                             >
                                                 <Link
-                                                    {...props}
+                                                    href={item.href}
                                                     className={cn(
-                                                        props.className,
-                                                        "w-full h-full py-4 px-4 block",
-                                                        isActive(props.href)
+                                                        "w-full h-full py-3 px-4 block",
+                                                        isActive(item.href)
                                                             ? "bg-accent text-accent-foreground"
                                                             : "hover:bg-accent/50",
                                                     )}
-                                                />
+                                                >
+                                                    {item.label}
+                                                </Link>
                                             </NavigationMenuItem>
                                         ))}
 
-                                        {/* Conditional Admin Link */}
-                                        {session && canAccessAdmin && (
-                                            <NavigationMenuItem className="w-full flex !inline-flex [&>a]:w-full border-t">
-                                                <Link
-                                                    href="/admin"
-                                                    className={cn(
-                                                        "text-foreground/80 transition-colors",
-                                                        "w-full h-full py-4 px-4 block",
-                                                        isActive("/admin")
-                                                            ? "bg-accent/10 text-accent-foreground"
-                                                            : "hover:bg-accent/20 hover:text-accent-foreground",
-                                                    )}
-                                                >
-                                                    Admin
-                                                </Link>
-                                            </NavigationMenuItem>
-                                        )}
-
                                         {/* Admin Submenu Items - Mobile */}
-                                        {isAdminSection && session && canAccessAdmin && (
+                                        {isAdminSection && adminSubItems.length > 0 && (
                                             <>
                                                 <div className="py-[1px] px-4 text-sm font-medium text-foreground/60 border-t"></div>
-                                                {adminNavItems.map((props) => (
+                                                {adminSubItems.map((item) => (
                                                     <NavigationMenuItem
-                                                        key={props.href}
+                                                        key={item.id}
                                                         className="w-full flex !inline-flex [&>a]:w-full"
                                                     >
                                                         <Link
-                                                            href={props.href}
+                                                            href={item.href}
                                                             className={cn(
-                                                                props.className,
-                                                                "w-full h-full py-4 px-6 block text-sm",
-                                                                isActive(props.href, props.exact)
+                                                                "w-full h-full py-3 px-5 block text-sm",
+                                                                isActive(item.href, true)
                                                                     ? "bg-accent text-accent-foreground"
                                                                     : "hover:bg-accent/50",
                                                             )}
                                                         >
-                                                            {props.children}
+                                                            {item.label}
                                                         </Link>
                                                     </NavigationMenuItem>
                                                 ))}
@@ -284,9 +232,9 @@ export function NavBar() {
                                             ) : (
                                                 <button
                                                     onClick={() => signIn()}
-                                                    className="px-3 py-1.5 bg-accent/10 border border-accent/20 rounded-md text-accent-foreground hover:bg-accent/20 font-medium transition-colors"
+                                                    className="text-sm text-foreground/70 hover:text-foreground"
                                                 >
-                                                    Sign in
+                                                    Admin & Editor Login
                                                 </button>
                                             )}
                                         </div>
@@ -301,19 +249,12 @@ export function NavBar() {
 
                     {/* Authentication - Mobile Top Bar */}
                     <div className="flex items-center">
-                        {session ? (
+                        {session && (
                             <button
                                 onClick={() => signOut()}
-                                className="px-3 py-1.5 bg-accent/10 border border-accent/20 rounded-md text-accent-foreground hover:bg-accent/20 font-medium transition-colors"
+                                className="px-3 py-1.5 bg-accent/10 border border-accent/20 rounded-md text-accent-foreground hover:bg-accent/20 font-medium transition-colors text-sm"
                             >
                                 Sign out
-                            </button>
-                        ) : (
-                            <button
-                                onClick={() => signIn()}
-                                className="px-3 py-1.5 bg-accent/10 border border-accent/20 rounded-md text-accent-foreground hover:bg-accent/20 font-medium transition-colors"
-                            >
-                                Sign in
                             </button>
                         )}
                     </div>

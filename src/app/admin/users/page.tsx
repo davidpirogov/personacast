@@ -1,8 +1,7 @@
 import { Suspense } from "react";
 import { UsersTable } from "@/components/data-tables/users-table";
-import { Loader } from "@/components/ui/loading";
 import { Metadata } from "next";
-import GeneralPageSection from "@/components/sections/general-page-section";
+import GeneralPageSection, { GeneralPageSectionSkeleton } from "@/components/sections/general-page-section";
 import { usersService } from "@/services/users-service";
 
 export const metadata: Metadata = {
@@ -21,8 +20,8 @@ const UsersList = async () => {
 
 export default function UsersPage() {
     return (
-        <main className="container mx-auto mt-16 p-6">
-            <Suspense fallback={<Loader />}>
+        <main className="container mx-auto p-6">
+            <Suspense fallback={<GeneralPageSectionSkeleton />}>
                 <UsersList />
             </Suspense>
         </main>

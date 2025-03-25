@@ -101,6 +101,20 @@ export interface HeroImage extends BaseRecord {
     episode?: Episode;
 }
 
+// MenuItem specific fields
+export interface MenuItem extends BaseRecord {
+    id: number;
+    label: string;
+    href: string;
+    order: number;
+    relOptions: string[];
+    isActive: boolean;
+    isSystem: boolean;
+    requiredRoles: string[];
+    parentId: number | null;
+    children?: MenuItem[];
+}
+
 // Generic database adapter interface
 export interface DatabaseAdapter<T extends BaseRecord> {
     getAll(tx?: Prisma.TransactionClient): Promise<T[]>;
@@ -162,6 +176,12 @@ export interface EpisodeDatabaseAdapter<T extends BaseRecord> extends IdDatabase
     ): Promise<T | null>;
 }
 
+export interface MenuItemDatabaseAdapter<T extends BaseRecord> extends IdDatabaseAdapter<T> {
+    getWithChildren(id: number, tx?: Prisma.TransactionClient): Promise<T | null>;
+    getTopLevelItems(tx?: Prisma.TransactionClient): Promise<T[]>;
+    getMenuTree(tx?: Prisma.TransactionClient): Promise<T[]>;
+}
+
 // Concrete adapter types
 export type UsersAdapterType = UuidDatabaseAdapter<User>;
 export type AccountsAdapterType = UuidDatabaseAdapter<Account>;
@@ -171,3 +191,4 @@ export type ApiClientsAdapterType = IdDatabaseAdapter<ApiClient>;
 export type VariablesAdapterType = IdNameDatabaseAdapter<Variable>;
 export type FilesAdapterType = UuidDatabaseAdapter<FileMetadata>;
 export type HeroImagesAdapterType = HeroImageAdapter;
+export type MenuItemsAdapterType = MenuItemDatabaseAdapter<MenuItem>;
