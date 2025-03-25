@@ -5,6 +5,13 @@ import { applyRateLimiting } from "@/middleware/rate-limit";
 import { handleAuthentication, addAuthHeaders, addMiddlewareHeaders } from "@/middleware/authentication";
 import { handleStaticRoutes } from "@/middleware/static-routes";
 
+// Public routes that don't require authentication
+const PUBLIC_ROUTES = ["/api/cached", "/api/health"];
+
+function isPublicRoute(path: string): boolean {
+    return PUBLIC_ROUTES.some((route) => path.startsWith(route));
+}
+
 // Export the middleware function
 export default async function middleware(req: NextRequest) {
     const responseHeaders: Record<string, string> = {};
@@ -40,11 +47,14 @@ export default async function middleware(req: NextRequest) {
         return staticResponse;
     }
 
-    const authResponse = await handleAuthentication(req);
-    if (authResponse) {
-        // Copy headers to the auth response
-        addMiddlewareHeaders(authResponse, new Headers(responseHeaders));
-        return authResponse;
+    // Skip authentication for public routes
+    if (!isPublicRoute(req.nextUrl.pathname)) {
+        const authResponse = await handleAuthentication(req);
+        if (authResponse) {
+            // Copy headers to the auth response
+            addMiddlewareHeaders(authResponse, new Headers(responseHeaders));
+            return authResponse;
+        }
     }
 
     const response = NextResponse.next();
