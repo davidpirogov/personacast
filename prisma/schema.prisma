@@ -145,3 +145,22 @@ model HeroImage {
 
   @@map("hero_images")
 }
+
+model MenuItem {
+  id           Int       @id @default(autoincrement())
+  label        String
+  href         String
+  order        Int
+  relOptions   String[]  @map("rel_options")
+  isActive     Boolean    @default(true) @map("is_active")
+  isSystem     Boolean    @default(false) @map("is_system")
+  requiredRoles String[]  @map("required_roles")
+  parentId     Int?       @map("parent_id")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  parent       MenuItem?  @relation("MenuItemToMenuItem", fields: [parentId], references: [id], onDelete: SetNull)
+  children     MenuItem[] @relation("MenuItemToMenuItem")
+
+  @@map("menu_items")
+}
