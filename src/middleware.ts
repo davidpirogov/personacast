@@ -72,7 +72,8 @@ export const config = {
          * - _next/static (static files)
          * - _next/image (image optimization files)
          * - favicon.ico (favicon file)
+         * - manifest.json (PWA manifest file)
          */
-        "/((?!api/health|_next/static|_next/image|favicon.ico).*)",
+        "/((?!api/health|_next/static|_next/image|favicon.ico|manifest.json).*)",
     ],
 };

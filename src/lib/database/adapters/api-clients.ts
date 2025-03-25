@@ -6,7 +6,6 @@ class ApiClientsAdapter implements ApiClientsAdapterType {
     async getAll(tx?: Prisma.TransactionClient): Promise<ApiClient[]> {
         const client = tx || prisma;
         const result = await client.apiClient.findMany();
-        console.log("API CLIENTS =", result);
         return result;
     }
 

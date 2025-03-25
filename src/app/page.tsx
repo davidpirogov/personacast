@@ -9,6 +9,8 @@ import { generateMetadata as genMeta } from "./head";
 import { HeroImagesPreloader } from "./preloaders";
 import { HeadResourceHints } from "./head-resource-hints";
 import { generatePreloadLinks } from "./head";
+import { DynamicHeroImage } from "@/components/layout/dynamic-hero-image";
+import { useHeroImage } from "@/providers/hero-images-provider";
 
 // Revalidate every 24 hours (in seconds)
 export const revalidate = 86400;
@@ -16,11 +18,10 @@ export const revalidate = 86400;
 // Cache the settings in memory for faster subsequent renders
 let cachedSettings: SiteSettings | null = null;
 let cacheTimestamp: number = 0;
-const CACHE_DURATION = 3600000; // 1 hour in milliseconds
+const CACHE_DURATION = 300000; // 5 minutes in milliseconds
 
 async function getSiteSettings(): Promise<SiteSettings> {
     const now = Date.now();
-    console.log("cachedSettings", cachedSettings);
     if (cachedSettings && now - cacheTimestamp < CACHE_DURATION) {
         return cachedSettings;
     }

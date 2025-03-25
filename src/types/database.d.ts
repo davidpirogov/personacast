@@ -44,6 +44,7 @@ export interface Podcast extends BaseRecord {
     description: string;
     published: boolean;
     publishedAt: Date | null;
+    heroImageId?: number | null;
 }
 
 // Episode specific fields
@@ -55,6 +56,7 @@ export interface Episode extends BaseRecord {
     podcastId: number;
     published: boolean;
     publishedAt: Date | null;
+    heroImageId?: number | null;
 }
 
 // API Client specific fields

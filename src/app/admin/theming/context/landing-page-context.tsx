@@ -386,6 +386,15 @@ export function LandingPageProvider({ children, initialSettings }: LandingPagePr
             const updatedVariable = await response.json();
             const parsedSettings = JSON.parse(updatedVariable.value);
 
+            // Sync favicon and manifest settings
+            const faviconResponse = await fetch('/api/favicon/sync', {
+                method: 'POST',
+            });
+
+            if (!faviconResponse.ok) {
+                console.warn('Failed to sync favicon settings, but site settings were saved');
+            }
+
             dispatch({ type: "SAVE_SUCCESS", payload: parsedSettings });
         } catch (error) {
             dispatch({

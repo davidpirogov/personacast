@@ -6,6 +6,7 @@ import { basename, join } from "path";
 import sharp from "sharp";
 import { readFile, writeFile } from "fs/promises";
 import { createDropdownMenuScope } from "@radix-ui/react-dropdown-menu";
+import { heroReferenceService } from "@/services/hero-reference-service";
 
 // Define image sizes for different viewports
 const IMAGE_SIZES = {
@@ -64,14 +65,14 @@ export class DefaultHeroImageService implements HeroImageService {
         const baseFilename = `${fileId}-hero-${size}`;
         const webpUrl = `/api/files/optimized/${fileId}/hero/${size}.webp`;
         const jpegUrl = `/api/files/optimized/${fileId}/hero/${size}.jpg`;
-        
+
         return {
             baseFilename,
             webpUrl,
             jpegUrl,
         };
     }
-    
+
     /**
      * Gets the optimized image URLs for a file without processing
      */
@@ -80,11 +81,11 @@ export class DefaultHeroImageService implements HeroImageService {
         if (!fileMetadata) {
             return null;
         }
-        
+
         // Generate URLs for all sizes
         const images = Object.entries(IMAGE_SIZES).map(([size, width]) => {
             const { webpUrl, jpegUrl } = this.getHeroImagePaths(fileId, size);
-            
+
             return {
                 size,
                 width,
@@ -94,10 +95,10 @@ export class DefaultHeroImageService implements HeroImageService {
                 },
             };
         });
-        
+
         // Use structured placeholder URL
         const placeholderUrl = `/api/files/optimized/${fileId}/hero/placeholder.webp`;
-        
+
         return {
             success: true,
             images,
@@ -147,7 +148,7 @@ export class DefaultHeroImageService implements HeroImageService {
 
                 // Get paths using the new method
                 const { baseFilename, webpUrl, jpegUrl } = this.getHeroImagePaths(fileMetadata.id, size);
-                
+
                 // File paths for local storage
                 const webpPath = join(heroImagesPath, `${baseFilename}.webp`);
                 const jpegPath = join(heroImagesPath, `${baseFilename}.jpg`);
@@ -177,10 +178,10 @@ export class DefaultHeroImageService implements HeroImageService {
         const placeholderFilename = `${fileMetadata.id}-hero-placeholder.webp`;
         const placeholderPath = join(heroImagesPath, placeholderFilename);
         await writeFile(placeholderPath, placeholderBuffer);
-        
+
         // Get the placeholder URL using the new structure
         const placeholderUrl = `/api/files/optimized/${fileMetadata.id}/hero/placeholder.webp`;
-        
+
         // Convert the placeholder to base64 for inline use
         const placeholderBase64 = `data:image/webp;base64,${placeholderBuffer.toString("base64")}`;
 
@@ -203,6 +204,9 @@ export class DefaultHeroImageService implements HeroImageService {
         if (!heroImage) {
             throw new Error("Hero image not found");
         }
+
+        // Check if this hero image is referenced in site settings or other entities
+        await heroReferenceService.handleHeroImageDelete(id);
 
         await this.adapter.delete(id);
     }

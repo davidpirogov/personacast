@@ -9,6 +9,7 @@ import { join, resolve } from "path";
 import sharp from "sharp";
 import { v4 as uuidv4 } from "uuid";
 import { heroImagesService } from "@/services/hero-images-service";
+import { heroReferenceService } from "@/services/hero-reference-service";
 
 export class FileUploadError extends Error {
     constructor(message: string) {
@@ -81,6 +82,9 @@ export class DefaultFileMetadataService implements FileMetadataService {
         if (!fileMetadata) {
             throw new Error("File not found");
         }
+
+        // Check if the file is referenced in site settings or other entities
+        await heroReferenceService.handleFileDelete(id);
 
         const dirPrefix = fileMetadata.id.substring(0, 2);
 
