@@ -29,7 +29,7 @@ export default async function PodcastsPage() {
                         key={podcast.id}
                         className="rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
                     >
-                        <a href={`/podcasts/${podcast.id}`} className="block">
+                        <a href={`/podcasts/${podcast.slug}`} className="block">
                             {/* {podcast.imageUrl && (
                                 <div className="aspect-square relative">
                                     <img

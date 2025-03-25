@@ -41,6 +41,24 @@ export interface PodcastService extends CRUDService<Podcast> {
      * Unpublish a podcast
      */
     unpublishPodcast(id: number): Promise<Podcast>;
+
+    /**
+     * Get a podcast by slug
+     */
+    getPodcastBySlug(slug: string): Promise<Podcast | null>;
+}
+
+export interface EpisodeService extends CRUDService<Episode> {
+    /**
+     * Publish an episode
+     */
+    publishEpisode(id: number): Promise<Episode>;
+
+    getEpisodesByPodcastId(podcastId: number): Promise<Episode[]>;
+
+    getEpisodeBySlug(slug: string): Promise<Episode | null>;
+
+    getEpisodeByPodcastSlugAndEpisodeSlug(podcastSlug: string, episodeSlug: string): Promise<Episode | null>;
 }
 
 export interface ApiClientService extends CRUDService<ApiClient> {
@@ -111,7 +129,6 @@ export interface FileMetadataService extends CRUDService<FileMetadata> {
      * Get thumbnails for a file, which are returned as an array of paths
      */
     getThumbnails(id: string): Promise<string[]>;
-
 }
 
 export interface HeroImageService extends CRUDService<HeroImage> {

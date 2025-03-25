@@ -50,6 +50,12 @@ class PodcastsAdapter implements PodcastsAdapterType {
             where: { id },
         });
     }
-}
 
+    async getBySlug(slug: string, tx?: Prisma.TransactionClient): Promise<Podcast | null> {
+        const client = tx || prisma;
+        return await client.podcast.findUnique({
+            where: { slug },
+        });
+    }
+}
 export default PodcastsAdapter;

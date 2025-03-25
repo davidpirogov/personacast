@@ -3,6 +3,7 @@ import { z } from "zod";
 // Base podcast schema with common fields
 const podcastBaseSchema = z.object({
     title: z.string().min(1, "Title is required"),
+    slug: z.string().min(1, "Slug is required"),
     description: z.string().min(1, "Description is required"),
     published: z.boolean().default(false),
     publishedAt: z.date().nullable(),
@@ -26,6 +27,10 @@ export type PodcastGetResponse = z.infer<typeof podcastGetResponseSchema>;
 // Create request schema
 export const podcastCreateRequestSchema = z.object({
     title: z.string().min(1, "Title is required"),
+    slug: z
+        .string()
+        .min(1, "Slug is required")
+        .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug must be kebab-case"),
     description: z.string().min(1, "Description is required"),
     published: z.boolean().default(false),
     publishedAt: z.date().nullable().default(null),

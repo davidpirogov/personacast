@@ -40,13 +40,22 @@ export interface Account extends BaseRecord {
 export interface Podcast extends BaseRecord {
     id: number;
     title: string;
+    slug: string;
     description: string;
     published: boolean;
     publishedAt: Date | null;
 }
 
 // Episode specific fields
-export interface Episode extends BaseRecord {}
+export interface Episode extends BaseRecord {
+    id: number;
+    title: string;
+    slug: string;
+    description: string;
+    podcastId: number;
+    published: boolean;
+    publishedAt: Date | null;
+}
 
 // API Client specific fields
 export interface ApiClient extends BaseRecord {
@@ -137,11 +146,25 @@ export interface IdNameDatabaseAdapter<T extends BaseRecord> extends IdDatabaseA
     getByName(name: string, tx?: Prisma.TransactionClient): Promise<T | null>;
 }
 
+export interface PodcastDatabaseAdapter<T extends BaseRecord> extends IdDatabaseAdapter<T> {
+    getBySlug(slug: string, tx?: Prisma.TransactionClient): Promise<T | null>;
+}
+
+export interface EpisodeDatabaseAdapter<T extends BaseRecord> extends IdDatabaseAdapter<T> {
+    getByPodcastId(podcastId: number, tx?: Prisma.TransactionClient): Promise<T[]>;
+    getBySlug(slug: string, tx?: Prisma.TransactionClient): Promise<T | null>;
+    getByPodcastIdAndEpisodeSlug(
+        podcastId: number,
+        episodeSlug: string,
+        tx?: Prisma.TransactionClient,
+    ): Promise<T | null>;
+}
+
 // Concrete adapter types
 export type UsersAdapterType = UuidDatabaseAdapter<User>;
 export type AccountsAdapterType = UuidDatabaseAdapter<Account>;
-export type PodcastsAdapterType = IdDatabaseAdapter<Podcast>;
-export type EpisodesAdapterType = IdDatabaseAdapter<Episode>;
+export type PodcastsAdapterType = PodcastDatabaseAdapter<Podcast>;
+export type EpisodesAdapterType = EpisodeDatabaseAdapter<Episode>;
 export type ApiClientsAdapterType = IdDatabaseAdapter<ApiClient>;
 export type VariablesAdapterType = IdNameDatabaseAdapter<Variable>;
 export type FilesAdapterType = UuidDatabaseAdapter<FileMetadata>;

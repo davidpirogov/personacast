@@ -19,32 +19,33 @@ export function EditPodcastForm({ podcast }: EditPodcastFormProps) {
         try {
             setError(null);
             const res = await fetch(`/api/podcasts/${podcast.id}`, {
-                method: "PATCH",
+                method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify(data),
             });
 
-            const responseData = await res.json();
-
             if (!res.ok) {
+                const responseData = await res.json();
                 throw new Error(responseData.details || responseData.error || "Failed to update podcast");
             }
 
-            toast.success("Podcast updated successfully");
-            router.push(`/studio/podcasts/${podcast.id}`);
+            const responseData = await res.json();
+            toast.success(`Podcast '${data.title || podcast.title}' updated successfully`);
+            router.push(`/studio/podcasts/${responseData.slug}`);
             router.refresh();
         } catch (err) {
+            console.error("Error updating podcast:", err);
             const message = err instanceof Error ? err.message : "Failed to update podcast";
             setError(message);
             toast.error(message);
+            throw err; // Re-throw to let the form component handle the error state
         }
     };
 
     return (
-        <div className="container mx-auto p-4 max-w-2xl">
-            <h1 className="text-2xl font-bold mb-6">Edit Podcast</h1>
+        <div className="container py-4 max-w-2xl">
             {error && (
                 <div
                     className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4"

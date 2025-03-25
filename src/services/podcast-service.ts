@@ -39,6 +39,10 @@ export class DefaultPodcastService implements PodcastService {
     async unpublishPodcast(id: number): Promise<Podcast> {
         return this.adapter.update(id, { published: false });
     }
+
+    async getPodcastBySlug(slug: string): Promise<Podcast | null> {
+        return this.adapter.getBySlug(slug);
+    }
 }
 
 // Export a singleton instance
