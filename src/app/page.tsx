@@ -20,7 +20,7 @@ const CACHE_DURATION = 3600000; // 1 hour in milliseconds
 
 async function getSiteSettings(): Promise<SiteSettings> {
     const now = Date.now();
-    // Return cached settings if they exist and are fresh
+    console.log("cachedSettings", cachedSettings);
     if (cachedSettings && now - cacheTimestamp < CACHE_DURATION) {
         return cachedSettings;
     }

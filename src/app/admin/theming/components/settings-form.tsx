@@ -26,6 +26,17 @@ export function SettingsForm() {
                     />
                 </div>
 
+                <div className="space-y-2">
+                    <Label htmlFor="description">Site Description</Label>
+                    <Input
+                        id="description"
+                        type="text"
+                        value={settings.description}
+                        onChange={(e) => updateSettings({ description: e.target.value })}
+                        placeholder="Enter site description"
+                    />
+                </div>
+
                 {/* Primary Color */}
                 <div className="space-y-2">
                     <Label htmlFor="primaryColor">Primary Color</Label>
