@@ -16,7 +16,7 @@ export default async function NewPodcastPage() {
     }
 
     return (
-        <main data-theme="workzone" className="container mx-auto p-6">
+        <main className="container mx-auto p-6">
             <Suspense fallback={<GeneralPageSectionSkeleton />}>
                 <GeneralPageSection title="New Podcast" description={`Create a new podcast`}>
                     <NewPodcastForm />

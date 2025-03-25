@@ -11,8 +11,8 @@ import { signIn, signOut } from "next-auth/react";
 import { usePermissions } from "@/lib/hooks/usePermissions";
 import { useSessionState } from "@/lib/hooks/use-session-state";
 import Image from "next/image";
-import { navBarClasses } from "./classes";
 import { navItems, adminNavItems } from "./menu-items";
+import { useSiteSettings } from "@/app/providers";
 
 function Avatar({ src, alt }: { src?: string | null; alt: string }) {
     return (
@@ -34,6 +34,7 @@ export function NavBar() {
     const isStudioSection = pathname?.startsWith("/studio");
     const { session, isLoading } = useSessionState();
     const { canAccessAdmin } = usePermissions();
+    const siteSettings = useSiteSettings();
 
     const isActive = (href: string, exact?: boolean) => {
         if (href === "/" || exact) {
@@ -53,7 +54,7 @@ export function NavBar() {
                     <div className="flex h-14 items-center justify-between">
                         <div className="flex items-center">
                             <Link href="/" className="mr-6 flex items-center space-x-2">
-                                <span className="font-bold text-foreground">Personacast</span>
+                                <span className="font-bold text-foreground">{siteSettings.title}</span>
                             </Link>
                         </div>
                     </div>
@@ -82,18 +83,15 @@ export function NavBar() {
         })
         .filter((item) => item !== null);
 
-    const useLandingTheme = !isAdminSection && !isStudioSection;
-    const navBarClassName = navBarClasses(useLandingTheme);
-
     return (
-        <nav data-theme={useLandingTheme ? "landing" : "workzone"} className={navBarClassName}>
+        <nav className="fixed top-0 z-50 w-full bg-white backdrop-blur-lg border-b border-gray-200 supports-[backdrop-filter]:bg-white/95 transition-all duration-300 ease-in-out">
             <div className="container mx-auto px-4">
                 {/* Desktop Navigation */}
                 <div className="hidden md:block">
                     <div className="flex h-14 items-center justify-between">
                         <div className="flex items-center">
                             <Link href="/" className="mr-6 flex items-center space-x-2">
-                                <span className="font-bold text-foreground">Personacast</span>
+                                <span className="font-bold text-foreground">{siteSettings.title}</span>
                             </Link>
                             <NavigationMenu>
                                 <NavigationMenuList className="gap-6">
@@ -104,8 +102,8 @@ export function NavBar() {
                                                 className={cn(
                                                     "landing:text-foreground/80 workzone:text-foreground/80 transition-colors px-3 py-2 rounded-md",
                                                     isActive(props.href)
-                                                        ? "landing:bg-accent landing:text-accent-foreground workzone:bg-primary workzone:text-primary-foreground"
-                                                        : "landing:hover:bg-accent/10 landing:hover:text-accent-foreground workzone:hover:bg-primary/10 workzone:hover:text-primary-foreground",
+                                                        ? "landing:bg-primary landing:text-primary-foreground workzone:bg-primary workzone:text-primary-foreground"
+                                                        : "landing:hover:bg-primary/10 landing:hover:text-primary-foreground workzone:hover:bg-primary/10 workzone:hover:text-primary-foreground",
                                                 )}
                                             />
                                         </NavigationMenuItem>
@@ -197,7 +195,7 @@ export function NavBar() {
                                 </Button>
                             </SheetTrigger>
                             <SheetContent side="left" className="w-[300px] sm:w-[400px]">
-                                <SheetTitle>Personacast Menu</SheetTitle>
+                                <SheetTitle>{siteSettings.title} Menu</SheetTitle>
                                 <NavigationMenu
                                     orientation="vertical"
                                     className="w-full [&_[role=menuitem]]:w-full"
@@ -297,7 +295,7 @@ export function NavBar() {
                             </SheetContent>
                         </Sheet>
                         <Link href="/" className="flex items-center space-x-2">
-                            <span className="font-bold">Personacast</span>
+                            <span className="font-bold">{siteSettings.title}</span>
                         </Link>
                     </div>
 

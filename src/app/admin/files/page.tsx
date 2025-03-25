@@ -21,7 +21,7 @@ const FilesList = async () => {
 
 export default function FilesPage() {
     return (
-        <main data-theme="workzone" className="container mx-auto mt-16 p-6">
+        <main className="container mx-auto mt-16 p-6">
             <Suspense fallback={<Loader />}>
                 <FilesList />
             </Suspense>

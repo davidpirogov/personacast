@@ -43,7 +43,7 @@ const LandingPageAdminSection = async () => {
 
 export default function LandingPageAdminPage() {
     return (
-        <main data-theme="workzone" className="container mx-auto mt-16 p-6">
+        <main className="container mx-auto mt-16 p-6">
             <Suspense fallback={<Loader />}>
                 <LandingPageAdminSection />
             </Suspense>

@@ -29,7 +29,7 @@ export default async function EditPodcastPage({ params }: EditPodcastPageProps) 
     }
 
     return (
-        <main data-theme="workzone" className="container mx-auto mt-12 p-6">
+        <main className="container mx-auto mt-12 p-6">
             <Suspense fallback={<GeneralPageSectionSkeleton />}>
                 <GeneralPageSection title="Edit Podcast" description={`Edit details for ${podcast.title}`}>
                     <EditPodcastForm podcast={podcast} />

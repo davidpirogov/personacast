@@ -21,7 +21,7 @@ const HeroImagesList = async () => {
 
 export default function HeroImagesPage() {
     return (
-        <main data-theme="workzone" className="container mx-auto mt-16 p-6">
+        <main className="container mx-auto mt-16 p-6">
             <Suspense fallback={<Loader />}>
                 <HeroImagesList />
             </Suspense>

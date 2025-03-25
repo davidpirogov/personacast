@@ -31,7 +31,7 @@ const PodcastList = async () => {
 
 export default async function StudioPage() {
     return (
-        <main data-theme="workzone" className="container mx-auto p-6">
+        <main className="container mx-auto p-6">
             <Suspense fallback={<GeneralPageSectionSkeleton />}>
                 <PodcastList />
             </Suspense>

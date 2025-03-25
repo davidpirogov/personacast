@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { type ReactNode, useEffect } from "react";
-
+import { getThemeForPath } from "./theme-paths";
 interface ThemeProviderProps {
     className?: string;
     children: ReactNode;
@@ -12,8 +12,7 @@ export function ThemeProvider({ className, children }: ThemeProviderProps) {
     const pathname = usePathname();
 
     // Define paths that should use the landing theme
-    const isLandingThemePath = ["", "/", "/podcasts", "/signin"].includes(pathname);
-    const theme = isLandingThemePath ? "landing" : "workzone";
+    const theme = getThemeForPath(pathname);
 
     // Update the theme on the body element when pathname changes
     useEffect(() => {

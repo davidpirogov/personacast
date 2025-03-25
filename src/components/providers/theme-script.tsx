@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
+import { getThemeForPath } from "./theme-paths";
 
 // This component handles setting the theme based on the current path
 export function ThemeScript() {
@@ -9,7 +10,7 @@ export function ThemeScript() {
 
     // Function to determine the theme based on path
     const getTheme = (path: string) => {
-        return ["", "/", "/podcasts"].includes(path) ? "landing" : "workzone";
+        return getThemeForPath(path);
     };
 
     // Set theme when component mounts and when pathname changes

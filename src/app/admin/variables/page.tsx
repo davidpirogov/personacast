@@ -21,7 +21,7 @@ const VariablesList = async () => {
 
 export default function VariablesPage() {
     return (
-        <main data-theme="workzone" className="container mx-auto mt-16 p-6">
+        <main className="container mx-auto mt-16 p-6">
             <Suspense fallback={<Loader />}>
                 <VariablesList />
             </Suspense>
