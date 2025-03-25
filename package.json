@@ -82,6 +82,7 @@
         "@eslint/eslintrc": "^3.3.1",
         "@types/ffprobe-static": "^2.0.3",
         "@types/fluent-ffmpeg": "^2.1.27",
+        "@types/jest": "^29.5.14",
         "@types/node": "^20.17.27",
         "@types/pg": "^8.11.11",
         "@types/react": "^18.3.20",
