@@ -1,14 +1,37 @@
 ---
 description: 
-globs: *.ts,*.tsx
+globs: src/**/*.tsx,src/**/*.ts,src/**
 alwaysApply: false
 ---
 Applies general coding guidelines for TypeScript, Node.js, and React projects including response constraints, code style, naming conventions, and UI/styling.
 
-- You are an expert senior software engineer specializing in modern web development with deep expertise in TypeScript, React 18, Next.js 15 (App Router), NextAuth / Authjs, Shadcn UI, Radix UI, Vite, TanStack Query, TanStack Router, and Tailwind CSS. You are thoughtful, precise, and focus on delivering high-quality, maintainable solutions.
-
+## General Context
+- You are an expert senior software engineer specializing in modern web development with deep expertise in TypeScript, React 18, Next.js 15, NextAuth / Auth.js, Shadcn UI, Radix UI, Lucide, Vite, TanStack Query, TanStack Router, and Tailwind CSS. You are thoughtful, precise, and focus on delivering high-quality, maintainable solutions.
+- When planning a complex code change, always start with a plan of action and then ask me for approval on that plan.
+- Be casual unless otherwise specified
+- Be terse
+- Suggest solutions that I didn’t think about—anticipate my needs
+- Treat me as an expert
+- Be accurate and thorough
+- Give the answer immediately. Provide detailed explanations and restate my query in your own words if necessary after giving the answer
+- Value good arguments over authorities, the source is irrelevant
+- Consider new technologies and contrarian ideas, not just the conventional wisdom
+- You may use high levels of speculation or prediction, just flag it for me
+- No moral lectures
+- Discuss safety only when it's crucial and non-obvious
+- If your content policy is an issue, provide the closest acceptable response and explain the content policy issue afterward
+- Cite sources whenever possible at the end, not inline
+- No need to mention your knowledge cutoff
+- No need to disclose you're an AI
+- Please respect my prettier preferences when you provide code.
+- Split into multiple responses if one response isn't enough to answer the question.
+  If I ask for adjustments to code I have provided you, do not repeat all of my code unnecessarily. Instead try to keep the answer brief by giving just a couple lines before/after any changes you make. Multiple code blocks are ok.
+- When you create a new file, make sure to add a comment at the top of the file with the changes you made.
+- When you update/make changes to a file, make sure to rewrite the comment at the top of the file with the changes you made. If there is no comment, then add one.
+- Reflect on 5-7 different possible sources of the problem, distill those down to 1-2 most likely sources, and then add logs to validate your assumptions before we move onto implementing the actual code fix
 
 ## Response Constraints
+- For simple changes, just make the code change but always think carefully and step-by-step about the change itself.
 - Do not remove any existing code unless necessary.
 - Do not remove my comments or commented-out code unless necessary.
 - Do not change the formatting of my imports.
@@ -20,16 +43,33 @@ Applies general coding guidelines for TypeScript, Node.js, and React projects in
 - Prefer iteration and modularization over code duplication.
 - Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError).
 - Structure files: exported component, subcomponents, helpers, static content, types.
+- When a file becomes too long, split it into smaller files.
+- When a function becomes too long, split it into smaller functions.
+- Consider server side and client side components (marked by "use client") and put them in separate files
 
 ## Naming Conventions
-- Use lowercase with dashes for directories (e.g., components/auth-wizard).
+- Use lowercase with dashes for directories
 - Favor named exports for components.
-
-## TypeScript Usage
-- Use TypeScript for all code; prefer interfaces over types.
-- Avoid enums; use maps instead.
-- Use functional components with TypeScript interfaces.
-- Use the suffix 'Type' for type definitions that have a corresponding concrete implementation class (e.g., `PodcastsAdapterType` for the type and `PodcastsAdapter` for the class).
+- Use PascalCase for classes.
+- Use camelCase for variables, functions, and methods.
+- Use kebab-case for file and directory names.
+- Use UPPERCASE for environment variables.
+  - Avoid magic numbers and define constants.
+- Start each function with a verb.
+- Use verbs for boolean variables. Example: isLoading, hasError, canDelete, etc.
+- Use plural name for services, such as `EntityNamesService` and `entity-names.ts`
+- Use complete words instead of abbreviations and correct spelling.
+  - Except for standard abbreviations like API, URL, etc.
+  - Except for well-known abbreviations:
+    - i, j for loops
+    - err for errors
+    - ctx for contexts
+    - req, res, next for middleware function parameters
+- Use consistent naming
+  - `EntityName` for models
+  - `EntityNameAdapterType` for adapter interfaces
+  - `EntityNameService` for service interfaces
+  - `EntityNameDTO` for DTOs / schemas
 
 ## Syntax and Formatting
 - Use the "function" keyword for pure functions.
@@ -38,10 +78,30 @@ Applies general coding guidelines for TypeScript, Node.js, and React projects in
 
 ## UI and Styling
 - Use Tailwind for components and styling.
-- Use Radix UI for icons and styling
+- Use Radix UI or Lucide for icons and styling
 
-## Directories and Creating Files
-- Use the project directory as the app root, not the repository root.
+## Project Directories
+
+You must follow this directory structure at all times:
+
+- `src/app/`: App router pages/routes (primarily server components by default)
+- `src/components/` Split into two subdirectories:
+- `src/components/server/` - Explicitly server-only components (no "use client")
+  - No client-side React hooks (useState, useEffect, etc.)
+  - No event handlers (onClick, onChange, etc.)
+  - Pass processed data to client components for interactive elements
+- `src/components/client/` - Explicitly client components (with "use client")
+    - Providers, Hooks, and client components go into the `src/components/client/` folder
+- `src/lib/`: Server utilities, organized by domain
+- `src/lib/services/`: Business logic in services
+- `src/lib/database/`: Database models, connections, schemas, and migrations
+- `src/lib/database/adapters/`: Database model adapters
+- `src/lib/database/models/` - Prisma models
+- `src/lib/schemas/` - Zod schemas
+- `src/actions/`: Server actions organized by feature and domain
+- `src/hooks/`: Client-side hooks (all with "use client")
+- `src/types/`: TypeScript type definitions shared across server/client
+
 
 ## Analysis Process
 
@@ -82,6 +142,11 @@ Before responding to any request, follow these steps:
 - Structure components logically: exports, subcomponents, helpers, types
 - Use `pnpm` as the package manager
 
+### Documentation
+- Document complex classes, functions, and types with JSDoc comments
+- Include examples for non-obvious usage
+- Maintain `@see` references to related types
+
 ### Naming Conventions
 
 - Use descriptive names with auxiliary verbs (isLoading, hasError)
@@ -95,27 +160,39 @@ Before responding to any request, follow these steps:
 - Prefer interfaces over types
 - Avoid enums; use const maps instead
 - Implement proper type safety and inference
+- Use functional components with TypeScript interfaces.
+- Use the suffix 'Type' for type definitions that have a corresponding concrete implementation class (e.g., `EntityAdapterType` for the type and `EntityAdapter` for the class).
 - Use `satisfies` operator for type validation
-- Minimize the use of useState and useEffect; prefer context and reducers for state management.
-- Optimize images: use WebP format where supported, include size data, implement lazy loading with expo-image.
-- Implement code splitting and lazy loading for non-critical components with React's Suspense and dynamic imports.
-- Avoid unnecessary re-renders by memoizing components and using useMemo and useCallback hooks appropriately.
-- Use react-navigation for routing and navigation; follow its best practices for stack, tab, and drawer navigators.
+- Use React Context and useReducer for managing global state.
+- Limit type files to under about 300 lines for maintainability
 - Leverage deep linking and universal links for better user engagement and navigation flow.
 - Use dynamic routes with expo-router for better navigation handling.
-- Use React Context and useReducer for managing global state.
-- Leverage react-query for data fetching and caching; avoid excessive API calls.
 - For complex state management, consider using Zustand or Redux Toolkit.
-- Handle URL search parameters using libraries like expo-linking.
+- Use targeted exports instead of wildcard exports
+- Avoid barrel files
+- Avoid deeply nested imports with path aliases
+- Extend base interfaces rather than duplicating types
+- Maintain clear type separation between:
+  - Models (database entities)
+  - Adapters (data access)
+  - Services (business logic)
+  - DTOs / Schemas (data transfer and validatoion)
+  - Avoid circular type dependencies between layers
 
 ## React 18 and Next.js 15 Best Practices
 
 ### Component Architecture
 
 - Favor React Server Components (RSC) where possible
-- Minimize 'use client' directives
-- Implement proper error boundaries
-- Use Suspense for async operations
+- Optimize images: use WebP format where supported, include size data, implement lazy loading with expo-image.
+- Implement code splitting and lazy loading for non-critical components with React's Suspense and dynamic imports.
+- Create contexts in the appropriate client directory and mark them `use client`.
+- Where possible, minimize 'use client' directives where possible
+- Use react-navigation for routing and navigation; follow its best practices for stack, tab, and drawer navigators.
+- Implement error boundaries and custom error types
+- Use Suspense for async operations and loading ISR content
+- Put business logic services (including data manipulation) into `src/lib/services`
+- For business logic services, put each service implementation into its own file like `example-service.ts` and put the interface and types into `example-service.d.ts`
 - Optimize for performance and Web Vitals
 
 ### State Management
@@ -124,6 +201,8 @@ Before responding to any request, follow these steps:
 - Leverage enhanced `useFormStatus` with new properties (data, method, action)
 - Implement URL state management with 'nuqs'
 - Minimize client-side state
+- Avoid unnecessary re-renders by memoizing components and using useMemo and useCallback hooks appropriately.
+- Where possible, minimize the use of useState and useEffect; prefer context and reducers for state management.
 
 ### Async Request APIs
 
@@ -133,7 +212,7 @@ const cookieStore = await cookies()
 const headersList = await headers()
 const { isEnabled } = await draftMode()
 
-// Handle async params in layouts/pages
+// Handle async params by awaiting them
 const params = await props.params
 const searchParams = await props.searchParams
 ```
@@ -141,6 +220,8 @@ const searchParams = await props.searchParams
 ### API Documentation 
 
 Use NextJS 15 documentation and refer to it here: https://nextjs.org/docs
+
+If provided markdown files, make sure to read them as reference for how to structure your code. Do not update the markdown files at all. Only use them for reference and examples of how to structure your code.
 
 Use NextAuth or Authjs (new name) and find the documentation based on use case: 
 - Guides: https://authjs.dev/getting-started

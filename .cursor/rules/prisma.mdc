@@ -1,6 +1,6 @@
 ---
 description: 
-globs: *.prisma,prisma/*
+globs: *.prisma,prisma/*,**/prisma.ts
 alwaysApply: false
 ---
 # Prisma Schema Rules
@@ -45,5 +45,23 @@ model ApiClient {
   // ... fields ...
 
   @@map("api_clients")
+}
+```
+
+## Adapters
+
+Make sure to import the correct Prisma and database clients: 
+```typescript
+import { Prisma } from "@prisma/client";
+import { db } from "@/lib/database/prisma";
+```
+
+The rest of the adapter should follow TypeScript best practice and include transaction support. 
+For example, an `Entity` adapter `getAll` method should look like
+```typescript
+async getAll(tx?: Prisma.TransactionClient): Promise<Entity[]> {
+    const client = tx || db;
+    const entities = await client.account.findMany();
+    return entities as Entity[];
 }
 ```
