@@ -1,69 +1,33 @@
-import { PrismaClient, Prisma } from "@prisma/client";
-import { Account, AccountsAdapterType } from "@/types/database";
+import { Prisma } from "@prisma/client";
+import { db } from "@/lib/database/prisma";
+import { UuidAdapter } from "@/lib/database/base/uuid-adapter";
+import { AccountsAdapterType } from "@/lib/database/types/adapters.d";
+import { Account } from "@/lib/database/types/models.d";
 
-const prisma = new PrismaClient();
-
-export class AccountsAdapter implements AccountsAdapterType {
-    async getAll(tx?: Prisma.TransactionClient): Promise<Account[]> {
-        const client = tx || prisma;
-        const accounts = await client.account.findMany();
-        return accounts as Account[];
+/**
+ * Adapter for managing Account entities
+ * Using base adapter pattern for common CRUD operations with specialized methods
+ */
+class AccountsAdapter extends UuidAdapter<Account> implements AccountsAdapterType {
+    constructor() {
+        super("account");
     }
 
-    async getById(id: string, tx?: Prisma.TransactionClient): Promise<Account | null> {
-        const client = tx || prisma;
-        const account = await client.account.findUnique({
-            where: { id },
-        });
-        return account as Account | null;
-    }
-
-    async create(
-        data: Omit<Account, "id" | "created_at" | "updated_at">,
-        tx?: Prisma.TransactionClient,
-    ): Promise<Account> {
-        const client = tx || prisma;
-        const account = await client.account.create({
-            data: {
-                ...data,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            },
-        });
-        return account as Account;
-    }
-
-    async update(
-        id: string,
-        data: Partial<Omit<Account, "id" | "created_at" | "updated_at">>,
-        tx?: Prisma.TransactionClient,
-    ): Promise<Account> {
-        const client = tx || prisma;
-        const account = await client.account.update({
-            where: { id },
-            data: {
-                ...data,
-                updatedAt: new Date(),
-            },
-        });
-        return account as Account;
-    }
-
-    async delete(id: string, tx?: Prisma.TransactionClient): Promise<void> {
-        const client = tx || prisma;
-        await client.account.delete({
-            where: { id },
-        });
-    }
-
-    // Additional methods specific to accounts
+    /**
+     * Find an account by provider and provider account ID
+     * @param provider - OAuth provider
+     * @param providerAccountId - Provider's account ID
+     * @param tx - Optional transaction client
+     * @returns Promise resolving to the account if found, null otherwise
+     */
     async findByProvider(
         provider: string,
         providerAccountId: string,
         tx?: Prisma.TransactionClient,
     ): Promise<Account | null> {
-        const client = tx || prisma;
-        const account = await client.account.findFirst({
+        const client = tx || db;
+        const modelClient = this.getModelClient(client);
+        const account = await modelClient.findFirst({
             where: {
                 provider,
                 providerAccountId,
@@ -72,10 +36,18 @@ export class AccountsAdapter implements AccountsAdapterType {
         return account as Account | null;
     }
 
+    /**
+     * Delete all accounts for a specific user
+     * @param userId - User ID
+     * @param tx - Optional transaction client
+     */
     async deleteByUserId(userId: string, tx?: Prisma.TransactionClient): Promise<void> {
-        const client = tx || prisma;
-        await client.account.deleteMany({
+        const client = tx || db;
+        const modelClient = this.getModelClient(client);
+        await modelClient.deleteMany({
             where: { userId },
         });
     }
 }
+
+export default AccountsAdapter;

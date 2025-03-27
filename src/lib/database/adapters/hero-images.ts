@@ -1,10 +1,20 @@
-import { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/database/prisma";
-import { HeroImagesAdapterType, HeroImage } from "@/types/database";
+import { Prisma, Variable } from "@prisma/client";
+import { db } from "@/lib/database/prisma";
+import { HeroImagesAdapterType } from "@/lib/database/types/adapters.d";
+import { HeroImage } from "@/lib/database/types/models.d";
+import { IdAdapter } from "@/lib/database/base/id-adapter";
 
-export class HeroImagesAdapter implements HeroImagesAdapterType {
+/**
+ * Adapter for managing HeroImage entities
+ * Using base adapter pattern with overrides for specialized methods
+ */
+class HeroImagesAdapter extends IdAdapter<HeroImage> implements HeroImagesAdapterType {
+    constructor() {
+        super("heroImage");
+    }
+
     async getAll(tx?: Prisma.TransactionClient): Promise<HeroImage[]> {
-        const client = tx || prisma;
+        const client = tx || db;
         const results = await client.heroImage.findMany({
             include: {
                 file: true,
@@ -16,7 +26,7 @@ export class HeroImagesAdapter implements HeroImagesAdapterType {
     }
 
     async getById(id: number, tx?: Prisma.TransactionClient): Promise<HeroImage | null> {
-        const client = tx || prisma;
+        const client = tx || db;
         const result = await client.heroImage.findUnique({
             where: { id },
             include: {
@@ -32,15 +42,12 @@ export class HeroImagesAdapter implements HeroImagesAdapterType {
         data: Pick<HeroImage, "name" | "description" | "fileId" | "podcastId" | "episodeId" | "urlTo">,
         tx?: Prisma.TransactionClient,
     ): Promise<HeroImage> {
-        const client = tx || prisma;
+        const client = tx || db;
         const result = await client.heroImage.create({
             data: {
-                name: data.name,
-                description: data.description,
-                fileId: data.fileId,
-                podcastId: data.podcastId,
-                episodeId: data.episodeId,
-                urlTo: data.urlTo,
+                ...data,
+                createdAt: new Date(),
+                updatedAt: new Date(),
             },
             include: {
                 file: true,
@@ -56,10 +63,13 @@ export class HeroImagesAdapter implements HeroImagesAdapterType {
         data: Partial<Omit<HeroImage, "id" | "createdAt" | "updatedAt">>,
         tx?: Prisma.TransactionClient,
     ): Promise<HeroImage> {
-        const client = tx || prisma;
+        const client = tx || db;
         const result = await client.heroImage.update({
             where: { id },
-            data: data as any,
+            data: {
+                ...(data as any),
+                updatedAt: new Date(),
+            },
             include: {
                 file: true,
                 podcast: true,
@@ -69,10 +79,12 @@ export class HeroImagesAdapter implements HeroImagesAdapterType {
         return result as unknown as HeroImage;
     }
 
-    async delete(id: number, tx?: Prisma.TransactionClient): Promise<void> {
-        const client = tx || prisma;
-        await client.heroImage.delete({
-            where: { id },
-        });
-    }
+    // async delete(id: number, tx?: Prisma.TransactionClient): Promise<void> {
+    //     const client = tx || db;
+    //     await client.heroImage.delete({
+    //         where: { id },
+    //     });
+    // }
 }
+
+export default HeroImagesAdapter;

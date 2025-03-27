@@ -1,79 +1,63 @@
-import { Episode, EpisodesAdapterType } from "@/types/database";
 import { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/database/prisma";
+import { db } from "@/lib/database/prisma";
+import { IdAdapter } from "@/lib/database/base/id-adapter";
+import { Episode } from "@/lib/database/types/models.d";
+import { EpisodesAdapterType } from "@/lib/database/types/adapters.d";
 
-class EpisodesAdapter implements EpisodesAdapterType {
-    async getAll(tx?: Prisma.TransactionClient): Promise<Episode[]> {
-        const client = tx || prisma;
-        return await client.episode.findMany();
+/**
+ * Adapter for managing Episode entities
+ * Using base adapter pattern for common CRUD operations
+ */
+class EpisodesAdapter extends IdAdapter<Episode> implements EpisodesAdapterType {
+    constructor() {
+        super("episode");
     }
 
-    async getById(id: number, tx?: Prisma.TransactionClient): Promise<Episode | null> {
-        const client = tx || prisma;
-        return await client.episode.findUnique({
-            where: { id },
-        });
-    }
-
-    async create(
-        data: Omit<Episode, "id" | "createdAt" | "updatedAt">,
-        tx?: Prisma.TransactionClient,
-    ): Promise<Episode> {
-        const client = tx || prisma;
-        return await client.episode.create({
-            data: {
-                ...data,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            },
-        });
-    }
-
-    async update(
-        id: number,
-        data: Partial<Omit<Episode, "id" | "createdAt" | "updatedAt">>,
-        tx?: Prisma.TransactionClient,
-    ): Promise<Episode> {
-        const client = tx || prisma;
-        return await client.episode.update({
-            where: { id },
-            data: {
-                ...data,
-                updatedAt: new Date(),
-            },
-        });
-    }
-
-    async delete(id: number, tx?: Prisma.TransactionClient): Promise<void> {
-        const client = tx || prisma;
-        await client.episode.delete({
-            where: { id },
-        });
-    }
-
+    /**
+     * Find episodes by podcast ID
+     * @param podcastId - ID of the podcast
+     * @param tx - Optional transaction client
+     * @returns Promise resolving to an array of episodes
+     */
     async getByPodcastId(podcastId: number, tx?: Prisma.TransactionClient): Promise<Episode[]> {
-        const client = tx || prisma;
-        return await client.episode.findMany({
+        const client = tx || db;
+        const modelClient = this.getModelClient(client);
+        return (await modelClient.findMany({
             where: { podcastId },
-        });
+        })) as Episode[];
     }
 
+    /**
+     * Find an episode by its slug
+     * @param slug - Episode slug
+     * @param tx - Optional transaction client
+     * @returns Promise resolving to the episode if found, null otherwise
+     */
     async getBySlug(slug: string, tx?: Prisma.TransactionClient): Promise<Episode | null> {
-        const client = tx || prisma;
-        return await client.episode.findUnique({
+        const client = tx || db;
+        const modelClient = this.getModelClient(client);
+        return (await modelClient.findUnique({
             where: { slug },
-        });
+        })) as Episode | null;
     }
 
+    /**
+     * Find an episode by podcast ID and episode slug
+     * @param podcastId - ID of the podcast
+     * @param episodeSlug - Episode slug
+     * @param tx - Optional transaction client
+     * @returns Promise resolving to the episode if found, null otherwise
+     */
     async getByPodcastIdAndEpisodeSlug(
         podcastId: number,
         episodeSlug: string,
         tx?: Prisma.TransactionClient,
     ): Promise<Episode | null> {
-        const client = tx || prisma;
-        return await client.episode.findUnique({
-            where: { podcastId, slug: episodeSlug },
-        });
+        const client = tx || db;
+        const modelClient = this.getModelClient(client);
+        return (await modelClient.findUnique({
+            where: { podcastId_slug: { podcastId, slug: episodeSlug } },
+        })) as Episode | null;
     }
 }
 

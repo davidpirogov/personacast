@@ -1,53 +1,65 @@
 import { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/database/prisma";
-import { FilesAdapterType, FileMetadata } from "@/types/database";
+import { db } from "@/lib/database/prisma";
+import { UuidAdapter } from "@/lib/database/base/uuid-adapter";
+import { FilesAdapterType } from "@/lib/database/types/adapters.d";
+import { FileMetadata } from "@/lib/database/types/models.d";
 
-export class FilesAdapter implements FilesAdapterType {
-    async getAll(tx?: Prisma.TransactionClient): Promise<FileMetadata[]> {
-        const client = tx || prisma;
-        return await client.fileMetadata.findMany();
+/**
+ * Adapter for managing FileMetadata entities
+ * Using base adapter pattern for common CRUD operations
+ */
+class FilesAdapter extends UuidAdapter<FileMetadata> implements FilesAdapterType {
+    constructor() {
+        super("fileMetadata");
     }
 
-    async getById(id: string, tx?: Prisma.TransactionClient): Promise<FileMetadata | null> {
-        const client = tx || prisma;
-        return await client.fileMetadata.findUnique({
-            where: { id },
-        });
-    }
+    // async getAll(tx?: Prisma.TransactionClient): Promise<FileMetadata[]> {
+    //     const client = tx || db;
+    //     return await client.fileMetadata.findMany();
+    // }
 
-    async create(
-        data: Omit<FileMetadata, "id" | "createdAt" | "updatedAt">,
-        tx?: Prisma.TransactionClient,
-    ): Promise<FileMetadata> {
-        const client = tx || prisma;
-        return await client.fileMetadata.create({
-            data: {
-                ...data,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            },
-        });
-    }
+    // async getById(id: string, tx?: Prisma.TransactionClient): Promise<FileMetadata | null> {
+    //     const client = tx || db;
+    //     return await client.fileMetadata.findUnique({
+    //         where: { id },
+    //     });
+    // }
 
-    async update(
-        id: string,
-        data: Partial<Omit<FileMetadata, "id" | "createdAt" | "updatedAt">>,
-        tx?: Prisma.TransactionClient,
-    ): Promise<FileMetadata> {
-        const client = tx || prisma;
-        return await client.fileMetadata.update({
-            where: { id },
-            data: {
-                ...data,
-                updatedAt: new Date(),
-            },
-        });
-    }
+    // async create(
+    //     data: Omit<FileMetadata, "id" | "createdAt" | "updatedAt">,
+    //     tx?: Prisma.TransactionClient,
+    // ): Promise<FileMetadata> {
+    //     const client = tx || db;
+    //     return await client.fileMetadata.create({
+    //         data: {
+    //             ...data,
+    //             createdAt: new Date(),
+    //             updatedAt: new Date(),
+    //         },
+    //     });
+    // }
 
-    async delete(id: string, tx?: Prisma.TransactionClient): Promise<void> {
-        const client = tx || prisma;
-        await client.fileMetadata.delete({
-            where: { id },
-        });
-    }
+    // async update(
+    //     id: string,
+    //     data: Partial<Omit<FileMetadata, "id" | "createdAt" | "updatedAt">>,
+    //     tx?: Prisma.TransactionClient,
+    // ): Promise<FileMetadata> {
+    //     const client = tx || db;
+    //     return await client.fileMetadata.update({
+    //         where: { id },
+    //         data: {
+    //             ...data,
+    //             updatedAt: new Date(),
+    //         },
+    //     });
+    // }
+
+    // async delete(id: string, tx?: Prisma.TransactionClient): Promise<void> {
+    //     const client = tx || db;
+    //     await client.fileMetadata.delete({
+    //         where: { id },
+    //     });
+    // }
 }
+
+export default FilesAdapter;
